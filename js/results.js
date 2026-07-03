@@ -3,28 +3,28 @@ function fmt(n) {
   var abs = Math.abs(n);
   var sign = n < 0 ? '-' : '';
   if (abs >= 10000000) {
-    var crVal = abs / 10000000;
-    if (crVal >= 1000) return sign + '₹' + indianFormat(Math.round(crVal)) + ' Cr';
-    if (crVal >= 100) return sign + '₹' + Math.round(crVal) + ' Cr';
-    if (crVal >= 10) return sign + '₹' + crVal.toFixed(1) + ' Cr';
-    return sign + '₹' + crVal.toFixed(2) + ' Cr';
+    var cr = abs / 10000000;
+    if (cr >= 1000) return sign + '₹' + indianFormat(Math.round(cr)) + ' Cr';
+    if (cr >= 100) return sign + '₹' + Math.round(cr) + ' Cr';
+    if (cr >= 10) return sign + '₹' + cr.toFixed(1) + ' Cr';
+    return sign + '₹' + cr.toFixed(2) + ' Cr';
   }
   if (abs >= 100000) {
-    var lVal = abs / 100000;
-    if (lVal >= 100) return sign + '₹' + Math.round(lVal) + ' L';
-    if (lVal >= 10) return sign + '₹' + lVal.toFixed(1) + ' L';
-    return sign + '₹' + lVal.toFixed(2) + ' L';
+    var l = abs / 100000;
+    if (l >= 100) return sign + '₹' + Math.round(l) + ' L';
+    if (l >= 10) return sign + '₹' + l.toFixed(1) + ' L';
+    return sign + '₹' + l.toFixed(2) + ' L';
   }
   if (abs >= 1000) return sign + '₹' + indianFormat(Math.round(abs));
   return sign + '₹' + Math.round(abs);
 }
 
 function indianFormat(num) {
-  var str = String(num);
-  var lastThree = str.substring(str.length - 3);
-  var remaining = str.substring(0, str.length - 3);
-  if (remaining !== '') lastThree = ',' + lastThree;
-  return remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+  var s = String(num);
+  var last = s.substring(s.length - 3);
+  var rest = s.substring(0, s.length - 3);
+  if (rest !== '') last = ',' + last;
+  return rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + last;
 }
 
 function pct(n) { return Math.round(n * 100) + '%'; }
@@ -37,28 +37,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var inp = JSON.parse(inputsRaw);
   var r = JSON.parse(resultsRaw);
-  var companyName = inp.company.name || 'Your Company';
-  setText('result-company-name', companyName);
+  var company = inp.company.name || 'Your Company';
+  setText('result-company-name', company);
 
-  // Hero
-  if (r.totalSavings < 0) {
-    document.querySelector('.results-hero .savings-label').textContent = 'Based on these inputs, Peepal would cost more than your current model.';
-    setText('hero-savings', fmt(Math.abs(r.totalSavings)));
-    document.querySelector('.results-hero .savings-amount').style.color = '#888';
-    setText('hero-pct', Math.round(Math.abs(r.savingsPct) * 100) + '% above current spend');
-    document.querySelector('.results-hero .savings-pct').style.color = 'rgba(255,255,255,0.5)';
+  // --- HERO ---
+  var heroLabel = document.getElementById('hero-label');
+  var heroAmount = document.getElementById('hero-savings');
+  var heroSub = document.getElementById('hero-sub');
+
+  if (r.isNetSaving) {
+    heroLabel.textContent = 'Estimated annual savings with Peepal';
+    heroAmount.textContent = fmt(r.netDifference);
+    heroAmount.style.color = '#F27C22';
+    heroSub.innerHTML = 'That is <span style="color:#F27C22">' + pct(r.diffPct) + '</span> of your current hiring spend';
   } else {
-    setText('hero-savings', fmt(r.totalSavings));
-    setText('hero-pct', pct(r.savingsPct));
+    heroLabel.textContent = 'Annual cost comparison';
+    heroAmount.textContent = fmt(Math.abs(r.netDifference));
+    heroAmount.style.color = '#ffffff';
+    heroSub.innerHTML = 'Peepal costs <span style="color:#F27C22">' + fmt(Math.abs(r.netDifference)) + ' more</span> per year. Here is what changes.';
   }
 
-  // KPIs
-  setText('kpi-current-cost', fmt(r.currentTotalHiringCost));
-  setText('kpi-peepal-cost', fmt(r.estimatedRPOCost));
-  setText('kpi-savings-abs', fmt(r.totalSavings));
-  setText('kpi-savings-pct', pct(r.savingsPct));
-  setText('kpi-cph-current', fmt(r.currentCostPerHire));
-  setText('kpi-cph-peepal', fmt(r.newCostPerHire));
+  // --- KPIs ---
+  setText('kpi-current-cost', fmt(r.currentTotal));
+  setText('kpi-peepal-cost', fmt(r.peepalTotal));
+  setText('kpi-cph-current', fmt(r.currentCPH));
+  setText('kpi-cph-peepal', fmt(r.peepalCPH));
+
+  // Savings or delta card
+  var savingsCard = document.getElementById('kpi-savings-card');
+  if (r.isNetSaving) {
+    setText('kpi-savings-label', 'ANNUAL SAVINGS');
+    setText('kpi-savings-abs', fmt(r.netDifference));
+    setText('kpi-savings-pct-label', 'of current spend');
+    setText('kpi-savings-pct', pct(r.diffPct));
+  } else {
+    setText('kpi-savings-label', 'ADDITIONAL INVESTMENT');
+    setText('kpi-savings-abs', fmt(Math.abs(r.netDifference)));
+    document.getElementById('kpi-savings-abs').style.color = 'var(--black)';
+    setText('kpi-savings-pct-label', 'above current spend');
+    setText('kpi-savings-pct', pct(r.diffPct));
+  }
 
   // TTF
   if (inp.ttf.days > 0) {
@@ -67,53 +85,65 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('kpi-ttf-card').classList.remove('hidden');
   }
 
-  // Capacity unlock
-  setText('capacity-current-prod', r.recruiterProductivityCurrent);
-  setText('capacity-total-hires', r.totalHires);
-  var capDesc = 'Your team currently closes ' + r.recruiterProductivityCurrent + ' hires per recruiter per year. ';
-  capDesc += 'With Peepal embedded, our recruiters typically handle ~80 hires per recruiter per year across standard roles. ';
-  capDesc += 'This number can vary for niche or senior positions where sourcing complexity is higher.';
-  setText('capacity-desc', capDesc);
-
-  // TTF note
-  var ttfNote = document.getElementById('ttf-note');
-  if (ttfNote && inp.ttf.days > 0) {
-    ttfNote.textContent = 'Peepal typically reduces time to fill by ~35% for standard roles. Niche or highly specialized roles may take longer depending on market availability.';
+  // --- VALUE STORY (shows when Peepal costs more) ---
+  var valueSection = document.getElementById('value-story-section');
+  if (!r.isNetSaving) {
+    valueSection.classList.remove('hidden');
+    var points = [];
+    if (r.techAbsorbed > 0) points.push('₹' + Math.round(r.techAbsorbed / 100000) + 'L in recruitment tech costs are absorbed by Peepal under a standard engagement.');
+    if (r.vacancySavings > 0) points.push('Vacancy cost drops by ' + fmt(r.vacancySavings) + ' from a 35% reduction in time to fill.');
+    if (inp.ttf.days > 0) points.push('Time to fill drops from ' + inp.ttf.days + ' to ~' + r.newTTF + ' days. For niche roles, this may vary.');
+    points.push('Your ' + inp.ta.recruiters + ' recruiter' + (inp.ta.recruiters > 1 ? 's' : '') + ' currently close ' + r.recruiterProductivity + ' hires per year each. Peepal handles ~80 hires per recruiter per year for standard roles, freeing your team for stakeholder work, offer experience, and internal mobility.');
+    var valueList = document.getElementById('value-points');
+    valueList.innerHTML = '';
+    for (var i = 0; i < points.length; i++) {
+      var li = document.createElement('li');
+      li.textContent = points[i];
+      valueList.appendChild(li);
+    }
   }
 
-  // Cost comparison
-  setText('cc-current-total', fmt(r.currentTotalHiringCost));
-  setText('cc-peepal-total', fmt(r.estimatedRPOCost));
-  setText('cc-payroll', fmt(r.breakdownCurrentCost.payroll));
-  setText('cc-tech', fmt(r.breakdownCurrentCost.tech));
-  setText('cc-vacancy', fmt(r.breakdownCurrentCost.vacancy));
-  setText('cc-service-fee', fmt(r.breakdownPeepalCost.serviceFee));
+  // --- CAPACITY ---
+  setText('capacity-current-prod', r.recruiterProductivity);
+  var capDesc = 'Your team currently closes ' + r.recruiterProductivity + ' hires per recruiter per year. ';
+  capDesc += 'Peepal recruiters typically handle ~80 hires per recruiter per year for standard roles. ';
+  capDesc += 'This varies for niche or senior positions where sourcing complexity is higher.';
+  setText('capacity-desc', capDesc);
 
-  // Input summary
-  setText('inp-company', companyName);
+  // --- COST BREAKDOWN ---
+  setText('cc-current-total', fmt(r.currentTotal));
+  setText('cc-peepal-total', fmt(r.peepalTotal));
+  setText('cc-ta-current', fmt(r.currentTA));
+  setText('cc-tech-current', fmt(r.currentTech));
+  setText('cc-vacancy-current', fmt(r.currentVacancyCost));
+  setText('cc-ta-peepal', fmt(r.currentTA));
+  setText('cc-fee-peepal', fmt(r.netFee));
+  setText('cc-vacancy-peepal', fmt(r.peepalVacancyCost));
+
+  // --- INPUT SUMMARY ---
+  setText('inp-company', company);
   setText('inp-industry', inp.company.industry || '--');
   setText('inp-size', inp.company.size || '--');
   setText('inp-recruiters', inp.ta.recruiters);
   setText('inp-ta-cost', fmt(inp.ta.annualCost));
   setText('inp-hires', r.totalHires);
   setText('inp-avg-ctc', fmt(r.avgCtc));
+  setText('inp-exp', CONFIG.feeLabels[inp.hiring.expLevel] || '--');
   setText('inp-tech', fmt(inp.tech.annualSpend));
   setText('inp-ttf', inp.ttf.days + ' days');
   setText('inp-vacancy', r.tracksVacancy ? fmt(inp.vacancy.costPerDay) + '/day' : 'Not tracked');
 
-  // Methodology
-  setText('m-ttf-reduction', Math.round(CONFIG.timeToFillReduction * 100) + '%');
-  setText('m-fee-rate', Math.round((CONFIG.blendedFeeRate || 0.10) * 100) + '%');
+  // --- METHODOLOGY ---
   setText('m-total-hires', r.totalHires);
-
-  // Bulk discount note
+  setText('m-fee-rate', CONFIG.feeLabels[inp.hiring.expLevel] || '10%');
+  setText('m-ttf-reduction', Math.round(CONFIG.timeToFillReduction * 100) + '%');
   if (r.bulkDiscount > 0) {
     setText('m-bulk-discount', fmt(r.bulkDiscount) + ' applied');
   } else {
     setText('m-bulk-discount', 'Not applicable (under 100 hires)');
   }
 
-  // Print
+  // --- PRINT ---
   document.getElementById('btn-print-trigger').addEventListener('click', showLeadModal);
   document.getElementById('btn-modal-submit').addEventListener('click', submitLead);
   document.getElementById('btn-modal-skip').addEventListener('click', function() { hideLeadModal(); window.print(); });
@@ -121,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function showLeadModal() { document.getElementById('lead-modal').classList.add('visible'); document.getElementById('modal-name').focus(); }
 function hideLeadModal() { document.getElementById('lead-modal').classList.remove('visible'); }
-
 function submitLead() {
   var name = document.getElementById('modal-name').value.trim();
   var email = document.getElementById('modal-email').value.trim();

@@ -6,16 +6,14 @@ var TRANSITION_MESSAGES = {
   2: function() {
     var bench = getBenchmark();
     var total = parseInt(document.getElementById('total-hires-input').value) || 0;
-    if (bench && total > 0) {
-      return 'Companies your size in ' + getIndustry() + ' typically spend ' + fmtApprox(bench.cph * total) + ' on internal TA annually.';
-    }
+    if (bench && total > 0) return 'Companies your size in ' + getIndustry() + ' typically spend ' + fmtApprox(bench.cph * total) + ' on internal TA annually.';
     return 'Got it. Calculating your current hiring cost...';
   },
   3: function() {
-    var total = getTotalHires();
-    return 'You are planning ' + total + ' hires this year. Calculating your fee structure...';
+    var total = parseInt(document.getElementById('total-hires-input').value) || 0;
+    return 'You are planning ' + total + ' hires this year. Running your comparison...';
   },
-  4: function() { return 'TA tech spend logged. Here is where savings start to appear.'; }
+  4: function() { return 'Tech spend logged. Peepal absorbs this under a standard engagement.'; }
 };
 
 function getIndustry() { return document.getElementById('industry').value || 'your sector'; }
@@ -23,12 +21,11 @@ function getIndustry() { return document.getElementById('industry').value || 'yo
 function getBenchmark() {
   var industry = document.getElementById('industry').value;
   var sizeEl = document.querySelector('input[name="company_size"]:checked');
-  var size = sizeEl ? sizeEl.value : null;
+  if (!sizeEl) return null;
+  var size = sizeEl.value;
   if (industry && size && CONFIG.benchmarks[industry] && CONFIG.benchmarks[industry][size]) return CONFIG.benchmarks[industry][size];
   return null;
 }
-
-function getTotalHires() { return parseInt(document.getElementById('total-hires-input').value) || 0; }
 
 function fmtApprox(n) {
   if (!n || isNaN(n)) return '₹0';
@@ -47,30 +44,25 @@ function getTTFDays() {
 function validateStep(step) {
   clearErrors();
   var valid = true;
-
   if (step === 1) {
     if (!document.getElementById('company-name').value.trim()) { showError('company-name', 'Required'); valid = false; }
     if (!document.getElementById('industry').value) { showError('industry', 'Select an industry'); valid = false; }
     if (!document.querySelector('input[name="company_size"]:checked')) { showError('company-size-group', 'Select a size'); valid = false; }
   }
   if (step === 2) {
-    var r = parseInt(document.getElementById('recruiters').value);
-    if (!r || r < 1) { showError('recruiters', 'Enter at least 1'); valid = false; }
-    var c = parseFloat(document.getElementById('ta-cost').value);
-    if (!c || c <= 0) { showError('ta-cost', 'Enter your team cost'); valid = false; }
+    if (!(parseInt(document.getElementById('recruiters').value) >= 1)) { showError('recruiters', 'Enter at least 1'); valid = false; }
+    if (!(parseFloat(document.getElementById('ta-cost').value) > 0)) { showError('ta-cost', 'Enter your team cost'); valid = false; }
   }
   if (step === 3) {
-    var h = parseInt(document.getElementById('total-hires-input').value);
-    if (!h || h < 1) { showError('total-hires-input', 'Enter number of hires'); valid = false; }
-    var ctc = parseFloat(document.getElementById('avg-ctc').value);
-    if (!ctc || ctc <= 0) { showError('avg-ctc', 'Enter average CTC'); valid = false; }
+    if (!(parseInt(document.getElementById('total-hires-input').value) >= 1)) { showError('total-hires-input', 'Enter number of hires'); valid = false; }
+    if (!(parseFloat(document.getElementById('avg-ctc').value) > 0)) { showError('avg-ctc', 'Enter average CTC'); valid = false; }
+    if (!document.querySelector('input[name="exp_level"]:checked')) { showError('exp-level-group', 'Select experience level'); valid = false; }
   }
   if (step === 5) {
     var checked = document.querySelector('input[name="ttf_preset"]:checked');
     if (!checked) { showError('ttf-presets-group', 'Select a time to fill'); valid = false; }
     else if (checked.value === 'custom') {
-      var days = parseInt(document.getElementById('ttf-custom-val').value);
-      if (!days || days < 61) { showError('ttf-custom-val', 'Enter a value above 60'); valid = false; }
+      if (!(parseInt(document.getElementById('ttf-custom-val').value) >= 61)) { showError('ttf-custom-val', 'Enter a value above 60'); valid = false; }
     }
   }
   return valid;
@@ -99,10 +91,9 @@ function updateProgressBar() {
   document.querySelector('.step-label').textContent = 'Step ' + currentStep + ' of ' + TOTAL_STEPS;
   var dots = document.querySelectorAll('.step-dot');
   for (var i = 0; i < dots.length; i++) {
-    var s = i + 1;
     dots[i].classList.remove('active', 'completed');
-    if (s === currentStep) dots[i].classList.add('active');
-    else if (completedSteps[s]) dots[i].classList.add('completed');
+    if (i + 1 === currentStep) dots[i].classList.add('active');
+    else if (completedSteps[i + 1]) dots[i].classList.add('completed');
   }
 }
 
@@ -133,16 +124,11 @@ function nextStep() {
   if (next > TOTAL_STEPS) { goToResults(); return; }
   if (TRANSITION_MESSAGES[currentStep]) {
     showTransitionMessage(currentStep, function() { showStep(next); });
-  } else {
-    showStep(next);
-  }
+  } else { showStep(next); }
 }
 
 function prevStep() { if (currentStep > 1) showStep(currentStep - 1); }
-
-function jumpToStep(step) {
-  if (completedSteps[step] || step === currentStep) showStep(step);
-}
+function jumpToStep(step) { if (completedSteps[step] || step === currentStep) showStep(step); }
 
 function updateTTFBenchmark() {
   var bench = getBenchmark();
@@ -155,7 +141,6 @@ function updateTTFBenchmark() {
 
 function collectInputs() {
   var parseLakh = function(id) { return (parseFloat(document.getElementById(id).value) || 0) * 100000; };
-
   return {
     company: {
       name: document.getElementById('company-name').value.trim(),
@@ -167,8 +152,9 @@ function collectInputs() {
       annualCost: parseLakh('ta-cost')
     },
     hiring: {
-      totalHires: getTotalHires(),
-      avgCtc: (parseFloat(document.getElementById('avg-ctc').value) || 0) * 100000
+      totalHires: parseInt(document.getElementById('total-hires-input').value) || 0,
+      avgCtc: (parseFloat(document.getElementById('avg-ctc').value) || 0) * 100000,
+      expLevel: document.querySelector('input[name="exp_level"]:checked').value
     },
     tech: { annualSpend: parseLakh('tech-spend') },
     ttf: { days: getTTFDays() },
@@ -190,27 +176,20 @@ function goToResults() {
 
 document.addEventListener('DOMContentLoaded', function() {
   var dots = document.querySelectorAll('.step-dot');
-  for (var i = 0; i < dots.length; i++) {
-    (function(idx) { dots[idx].addEventListener('click', function() { jumpToStep(idx + 1); }); })(i);
-  }
+  for (var i = 0; i < dots.length; i++) (function(idx) { dots[idx].addEventListener('click', function() { jumpToStep(idx + 1); }); })(i);
   var nextBtns = document.querySelectorAll('.btn-next');
   for (var i = 0; i < nextBtns.length; i++) nextBtns[i].addEventListener('click', nextStep);
   var backBtns = document.querySelectorAll('.btn-back');
   for (var i = 0; i < backBtns.length; i++) backBtns[i].addEventListener('click', prevStep);
   var resultsBtn = document.getElementById('btn-results');
   if (resultsBtn) resultsBtn.addEventListener('click', goToResults);
-
   var ttfRadios = document.querySelectorAll('input[name="ttf_preset"]');
-  for (var i = 0; i < ttfRadios.length; i++) {
-    ttfRadios[i].addEventListener('change', function() {
-      document.getElementById('ttf-custom-wrap').classList.toggle('hidden', this.value !== 'custom');
-    });
-  }
+  for (var i = 0; i < ttfRadios.length; i++) ttfRadios[i].addEventListener('change', function() {
+    document.getElementById('ttf-custom-wrap').classList.toggle('hidden', this.value !== 'custom');
+  });
   var vacRadios = document.querySelectorAll('input[name="vacancy_tracks"]');
-  for (var i = 0; i < vacRadios.length; i++) {
-    vacRadios[i].addEventListener('change', function() {
-      document.getElementById('vacancy-cost-wrap').classList.toggle('hidden', this.value !== 'yes');
-    });
-  }
+  for (var i = 0; i < vacRadios.length; i++) vacRadios[i].addEventListener('change', function() {
+    document.getElementById('vacancy-cost-wrap').classList.toggle('hidden', this.value !== 'yes');
+  });
   updateProgressBar();
 });

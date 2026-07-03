@@ -79,18 +79,26 @@
       <div class="step-nav"><button class="btn-back" type="button">Back</button><button class="btn-next" type="button">Continue</button></div>
     </section>
 
-    <!-- STEP 3: Hiring Volume -->
+    <!-- STEP 3: Hiring Volume + Experience -->
     <section class="step-card" data-step="3">
       <div class="step-card-header">
         <p class="step-eyebrow">Step 3</p>
         <h2 class="step-title">Annual hiring volume</h2>
-        <p class="step-subtitle">Total roles you expect to fill this year, and the average package.</p>
+        <p class="step-subtitle">Total roles, average package, and typical experience level.</p>
       </div>
       <div class="hiring-simple">
         <div class="field"><label for="total-hires-input">Total annual hires</label><input type="number" id="total-hires-input" placeholder="100" min="1"></div>
         <div class="field"><label for="avg-ctc">Average CTC (in Lakhs)</label><div class="input-rupee"><input type="number" id="avg-ctc" placeholder="12"></div></div>
       </div>
-      <p class="hint">Use the blended average across all levels. Entry-heavy hiring? Weight down. Leadership-heavy? Weight up.</p>
+      <div class="field" id="exp-level-group" style="margin-top:16px">
+        <label>Typical experience level you hire for</label>
+        <div class="choice-grid three-col">
+          <div class="choice-item"><input type="radio" name="exp_level" id="exp-junior" value="junior"><label for="exp-junior">Mostly<br>0-5 yrs</label></div>
+          <div class="choice-item"><input type="radio" name="exp_level" id="exp-mixed" value="mixed"><label for="exp-mixed">Mix of<br>levels</label></div>
+          <div class="choice-item"><input type="radio" name="exp_level" id="exp-senior" value="senior"><label for="exp-senior">Mostly<br>10+ yrs</label></div>
+        </div>
+      </div>
+      <p class="hint">This determines the applicable fee rate: 8.33% for junior, 10% for mixed, 12.5% for senior roles.</p>
       <div class="step-nav"><button class="btn-back" type="button">Back</button><button class="btn-next" type="button">Continue</button></div>
     </section>
 

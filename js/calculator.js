@@ -7,80 +7,82 @@ function calculate(input) {
 
   var totalHires = hiring.totalHires || 0;
   var avgCtc = hiring.avgCtc || 0;
-  var blendedFeeRate = CONFIG.blendedFeeRate || 0.10;
+  var feeRate = CONFIG.feeRates[hiring.expLevel] || CONFIG.feeRates.mixed;
 
-  // Current internal cost (no branding)
-  var currentInternalCost = (ta.annualCost || 0) + (tech.annualSpend || 0);
-
-  // Current cost per hire
-  var currentCostPerHire = totalHires > 0 ? currentInternalCost / totalHires : 0;
-
-  // Vacancy cost
+  // --- CURRENT STATE ---
+  var currentTA = ta.annualCost || 0;
+  var currentTech = tech.annualSpend || 0;
   var tracksVacancy = vacancy.tracksIt && vacancy.costPerDay > 0;
   var currentVacancyCost = tracksVacancy ? (ttf.days || 0) * (vacancy.costPerDay || 0) * totalHires : 0;
+  var currentTotal = currentTA + currentTech + currentVacancyCost;
+  var currentCPH = totalHires > 0 ? currentTotal / totalHires : 0;
 
-  // Current total hiring cost
-  var currentTotalHiringCost = currentInternalCost + currentVacancyCost;
+  // --- WITH PEEPAL ---
+  // TA payroll stays (client keeps their team)
+  // Tech goes to zero (absorbed by Peepal)
+  // Peepal fee = hires x CTC x rate
+  var grossFee = totalHires * avgCtc * feeRate;
 
-  // Gross Peepal fee
-  var grossPeepalFee = totalHires * avgCtc * blendedFeeRate;
-
-  // Bulk discount
+  // Bulk discount on gross fee
   var bulkDiscount = 0;
   for (var i = 0; i < CONFIG.bulkDiscounts.length; i++) {
     if (totalHires >= CONFIG.bulkDiscounts[i].threshold) {
-      bulkDiscount = Math.round(grossPeepalFee * CONFIG.bulkDiscounts[i].rate);
+      bulkDiscount = Math.round(grossFee * CONFIG.bulkDiscounts[i].rate);
       break;
     }
   }
+  var netFee = Math.round(grossFee - bulkDiscount);
 
-  // Tech absorbed
-  var techSavings = CONFIG.techCoveredByPeepal ? (tech.annualSpend || 0) : 0;
-
-  // TTF reduction and vacancy savings
+  // Reduced vacancy cost from TTF improvement
   var newTTF = Math.round((ttf.days || 0) * (1 - CONFIG.timeToFillReduction));
-  var newVacancyCost = tracksVacancy ? newTTF * (vacancy.costPerDay || 0) * totalHires : 0;
-  var vacancySavings = currentVacancyCost - newVacancyCost;
+  var peepalVacancyCost = tracksVacancy ? newTTF * (vacancy.costPerDay || 0) * totalHires : 0;
 
-  // Estimated RPO cost (simple: fee minus bulk discount)
-  var estimatedRPOCost = Math.max(0, Math.round(grossPeepalFee - bulkDiscount));
+  // Peepal total = TA stays + net fee + no tech + reduced vacancy
+  var peepalTotal = currentTA + netFee + peepalVacancyCost;
+  var peepalCPH = totalHires > 0 ? peepalTotal / totalHires : 0;
 
-  // Total savings
-  var totalSavings = currentTotalHiringCost - estimatedRPOCost + techSavings + vacancySavings;
-  var savingsPct = currentTotalHiringCost > 0 ? totalSavings / currentTotalHiringCost : 0;
+  // --- DIFFERENCE ---
+  var netDifference = currentTotal - peepalTotal;
+  var isNetSaving = netDifference > 0;
+  var diffPct = currentTotal > 0 ? Math.abs(netDifference) / currentTotal : 0;
 
-  // Capacity unlock
-  var recruiterProductivityCurrent = ta.recruiters > 0 ? Math.round(totalHires / ta.recruiters) : 0;
-  var newCostPerHire = totalHires > 0 ? estimatedRPOCost / totalHires : 0;
+  // Vacancy savings (for display)
+  var vacancySavings = currentVacancyCost - peepalVacancyCost;
+
+  // Capacity
+  var recruiterProductivity = ta.recruiters > 0 ? Math.round(totalHires / ta.recruiters) : 0;
 
   return {
     totalHires: totalHires,
     avgCtc: avgCtc,
-    blendedFeeRate: blendedFeeRate,
-    currentInternalCost: currentInternalCost,
-    currentCostPerHire: currentCostPerHire,
+    feeRate: feeRate,
+    expLevel: hiring.expLevel,
+
+    // Current
+    currentTA: currentTA,
+    currentTech: currentTech,
     currentVacancyCost: currentVacancyCost,
-    currentTotalHiringCost: currentTotalHiringCost,
-    grossPeepalFee: grossPeepalFee,
+    currentTotal: currentTotal,
+    currentCPH: currentCPH,
+
+    // Peepal
+    grossFee: grossFee,
     bulkDiscount: bulkDiscount,
-    techSavings: techSavings,
-    newTTF: newTTF,
-    newVacancyCost: newVacancyCost,
+    netFee: netFee,
+    peepalVacancyCost: peepalVacancyCost,
+    peepalTotal: peepalTotal,
+    peepalCPH: peepalCPH,
+
+    // Difference
+    netDifference: netDifference,
+    isNetSaving: isNetSaving,
+    diffPct: diffPct,
+
+    // Components
+    techAbsorbed: currentTech,
     vacancySavings: vacancySavings,
-    estimatedRPOCost: estimatedRPOCost,
-    totalSavings: totalSavings,
-    savingsPct: savingsPct,
-    recruiterProductivityCurrent: recruiterProductivityCurrent,
-    newCostPerHire: newCostPerHire,
+    newTTF: newTTF,
     tracksVacancy: tracksVacancy,
-    breakdownCurrentCost: {
-      payroll: ta.annualCost || 0,
-      tech: tech.annualSpend || 0,
-      vacancy: currentVacancyCost
-    },
-    breakdownPeepalCost: {
-      serviceFee: estimatedRPOCost,
-      thirdParty: 0
-    }
+    recruiterProductivity: recruiterProductivity
   };
 }

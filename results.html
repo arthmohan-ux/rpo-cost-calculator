@@ -23,13 +23,14 @@
 
   <div class="results-hero">
     <p class="company-name" id="result-company-name">Your Company</p>
-    <p class="savings-label">Estimated annual savings with Peepal</p>
+    <p class="savings-label" id="hero-label">Cost comparison</p>
     <div class="savings-amount" id="hero-savings">--</div>
-    <p class="savings-pct">That's <span id="hero-pct">--</span> of your current hiring spend</p>
+    <p class="savings-pct" id="hero-sub">--</p>
   </div>
 
   <div class="results-content">
 
+    <!-- KPIs -->
     <section class="results-section">
       <p class="results-section-title">Cost overview</p>
       <div class="kpi-grid">
@@ -50,16 +51,25 @@
           <div class="kpi-row"><span class="kpi-tag">Current</span><span class="kpi-val" id="kpi-ttf-current">--</span></div>
           <div class="kpi-arrow">&#8595;</div>
           <div class="kpi-row"><span class="kpi-tag">With Peepal</span><span class="kpi-val orange" id="kpi-ttf-peepal">--</span></div>
-          <p class="kpi-note" id="ttf-note"></p>
+          <p class="kpi-note">May vary for niche or senior roles.</p>
         </div>
-        <div class="kpi-card g-card">
-          <p class="kpi-label">Annual savings</p>
+        <div class="kpi-card g-card" id="kpi-savings-card">
+          <p class="kpi-label" id="kpi-savings-label">ANNUAL SAVINGS</p>
           <div class="kpi-row"><span class="kpi-val orange" id="kpi-savings-abs">--</span></div>
-          <div class="kpi-row" style="margin-top:4px"><span class="kpi-tag">of current spend</span><span class="kpi-val" id="kpi-savings-pct">--</span></div>
+          <div class="kpi-row" style="margin-top:4px"><span class="kpi-tag" id="kpi-savings-pct-label">of current spend</span><span class="kpi-val" id="kpi-savings-pct">--</span></div>
         </div>
       </div>
     </section>
 
+    <!-- Value story (only shows when Peepal costs more) -->
+    <section class="results-section hidden" id="value-story-section">
+      <p class="results-section-title">What changes with Peepal</p>
+      <div class="g-card" style="padding:20px">
+        <ul id="value-points" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px;font-size:14px;color:var(--grey-700);line-height:1.6"></ul>
+      </div>
+    </section>
+
+    <!-- Capacity -->
     <section class="results-section">
       <p class="results-section-title">Capacity unlock</p>
       <div class="capacity-card g-card">
@@ -79,33 +89,38 @@
       </div>
     </section>
 
+    <!-- Cost breakdown -->
     <section class="results-section">
       <p class="results-section-title">Cost breakdown</p>
       <div class="cost-compare">
         <div class="cost-col g-card">
           <p class="cost-col-label">Current</p>
           <p class="cost-col-total" id="cc-current-total">--</p>
-          <div class="cost-line"><span>TA payroll</span><span class="clv" id="cc-payroll">--</span></div>
-          <div class="cost-line"><span>Rec. tech</span><span class="clv" id="cc-tech">--</span></div>
-          <div class="cost-line"><span>Vacancy</span><span class="clv" id="cc-vacancy">--</span></div>
+          <div class="cost-line"><span>TA payroll</span><span class="clv" id="cc-ta-current">--</span></div>
+          <div class="cost-line"><span>Rec. tech</span><span class="clv" id="cc-tech-current">--</span></div>
+          <div class="cost-line"><span>Vacancy</span><span class="clv" id="cc-vacancy-current">--</span></div>
         </div>
         <div class="cost-col peepal g-card">
           <p class="cost-col-label">With Peepal</p>
           <p class="cost-col-total" id="cc-peepal-total">--</p>
-          <div class="cost-line"><span>Service fee</span><span class="clv" id="cc-service-fee">--</span></div>
-          <div class="cost-line"><span>Third party</span><span class="clv">₹0*</span></div>
+          <div class="cost-line"><span>TA payroll</span><span class="clv" id="cc-ta-peepal">--</span></div>
+          <div class="cost-line"><span>Peepal fee</span><span class="clv" id="cc-fee-peepal">--</span></div>
+          <div class="cost-line"><span>Rec. tech</span><span class="clv">₹0</span></div>
+          <div class="cost-line"><span>Vacancy</span><span class="clv" id="cc-vacancy-peepal">--</span></div>
         </div>
       </div>
     </section>
 
+    <!-- Absorbed -->
     <section class="results-section">
       <div class="absorbed-card g-card">
         <p class="absorbed-title">What Peepal absorbs</p>
         <p class="absorbed-body">Recruitment technology costs are covered under a standard Peepal engagement. This includes ATS, LinkedIn Recruiter, job boards, career page, and recruitment marketing.</p>
-        <p class="absorbed-note">* Third-party assessments and background verification are billed at actuals with prior approval and are not included in this estimate.</p>
+        <p class="absorbed-note">* Third-party assessments and background verification are billed at actuals with prior approval.</p>
       </div>
     </section>
 
+    <!-- Input summary -->
     <section class="results-section">
       <p class="results-section-title">What you entered</p>
       <div class="method-card g-card">
@@ -116,12 +131,14 @@
         <div class="assume-row"><span class="a-l">TA team cost</span><span class="a-v" id="inp-ta-cost">--</span></div>
         <div class="assume-row"><span class="a-l">Annual hires</span><span class="a-v" id="inp-hires">--</span></div>
         <div class="assume-row"><span class="a-l">Average CTC</span><span class="a-v" id="inp-avg-ctc">--</span></div>
+        <div class="assume-row"><span class="a-l">Experience level</span><span class="a-v" id="inp-exp">--</span></div>
         <div class="assume-row"><span class="a-l">Tech spend</span><span class="a-v" id="inp-tech">--</span></div>
         <div class="assume-row"><span class="a-l">Time to fill</span><span class="a-v" id="inp-ttf">--</span></div>
         <div class="assume-row"><span class="a-l">Vacancy cost</span><span class="a-v" id="inp-vacancy">--</span></div>
       </div>
     </section>
 
+    <!-- Methodology -->
     <section class="results-section">
       <p class="results-section-title">Methodology and assumptions</p>
       <div class="method-card g-card">
@@ -129,14 +146,14 @@
         <div class="assume-row"><span class="a-l">Fee rate applied</span><span class="a-v" id="m-fee-rate">--</span></div>
         <div class="assume-row"><span class="a-l">Time-to-fill reduction</span><span class="a-v" id="m-ttf-reduction">--</span></div>
         <div class="assume-row"><span class="a-l">Bulk discount</span><span class="a-v" id="m-bulk-discount">--</span></div>
-        <p class="method-note">This is an estimate based on your inputs and Peepal's standard pricing model. Actual fees are confirmed at proposal stage.</p>
+        <p class="method-note">This is an estimate based on your inputs and Peepal's standard pricing model. Actual fees are confirmed at proposal stage. TA payroll is assumed to remain unchanged under both models.</p>
       </div>
     </section>
 
     <section class="results-section no-print">
       <div class="cta-card">
-        <h2>Ready to make the switch?</h2>
-        <p>Talk to our team and we'll put together a proposal based on your actual roles.</p>
+        <h2>Ready to explore this further?</h2>
+        <p>Talk to our team for a proposal based on your actual roles and hiring plan.</p>
         <a href="https://peepalconsulting.com" class="btn-cta">Talk to Peepal</a>
       </div>
     </section>
@@ -144,6 +161,7 @@
     <button class="recalc-link no-print" onclick="window.location.href='calculator.html'">Recalculate with different inputs</button>
   </div>
 
+  <!-- Lead modal -->
   <div class="modal-backdrop" id="lead-modal" role="dialog" aria-modal="true">
     <div class="modal-card">
       <h2 class="modal-title">Get your full report</h2>
