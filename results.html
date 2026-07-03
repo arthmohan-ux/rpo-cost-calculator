@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Hiring Cost Analysis - Peepal Consulting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/results.css">
+</head>
+<body class="results-page">
+  <h1 class="sr-only">Your RPO Cost Analysis - Peepal Consulting</h1>
+
+  <header class="results-topbar no-print">
+    <a href="index.html" class="logo"><img src="assets/logo.png" alt="Peepal" height="20" style="filter:brightness(0) invert(1);"></a>
+    <button class="btn-print" id="btn-print-trigger" type="button">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 5V1h8v4M3 10H1V5h12v5h-2M3 8h8v5H3V8z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+      Print report
+    </button>
+  </header>
+
+  <div class="results-hero">
+    <p class="company-name" id="result-company-name">Your Company</p>
+    <p class="savings-label">Estimated annual savings with Peepal</p>
+    <div class="savings-amount" id="hero-savings">--</div>
+    <p class="savings-pct">That's <span id="hero-pct">--</span> of your current hiring spend</p>
+  </div>
+
+  <div class="results-content">
+
+    <section class="results-section">
+      <p class="results-section-title">Cost overview</p>
+      <div class="kpi-grid">
+        <div class="kpi-card g-card">
+          <p class="kpi-label">Total hiring cost</p>
+          <div class="kpi-row"><span class="kpi-tag">Current</span><span class="kpi-val" id="kpi-current-cost">--</span></div>
+          <div class="kpi-arrow">&#8595;</div>
+          <div class="kpi-row"><span class="kpi-tag">With Peepal</span><span class="kpi-val orange" id="kpi-peepal-cost">--</span></div>
+        </div>
+        <div class="kpi-card g-card">
+          <p class="kpi-label">Cost per hire</p>
+          <div class="kpi-row"><span class="kpi-tag">Current</span><span class="kpi-val" id="kpi-cph-current">--</span></div>
+          <div class="kpi-arrow">&#8595;</div>
+          <div class="kpi-row"><span class="kpi-tag">With Peepal</span><span class="kpi-val orange" id="kpi-cph-peepal">--</span></div>
+        </div>
+        <div class="kpi-card g-card hidden" id="kpi-ttf-card">
+          <p class="kpi-label">Time to fill</p>
+          <div class="kpi-row"><span class="kpi-tag">Current</span><span class="kpi-val" id="kpi-ttf-current">--</span></div>
+          <div class="kpi-arrow">&#8595;</div>
+          <div class="kpi-row"><span class="kpi-tag">With Peepal</span><span class="kpi-val orange" id="kpi-ttf-peepal">--</span></div>
+          <p class="kpi-note" id="ttf-note"></p>
+        </div>
+        <div class="kpi-card g-card">
+          <p class="kpi-label">Annual savings</p>
+          <div class="kpi-row"><span class="kpi-val orange" id="kpi-savings-abs">--</span></div>
+          <div class="kpi-row" style="margin-top:4px"><span class="kpi-tag">of current spend</span><span class="kpi-val" id="kpi-savings-pct">--</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="results-section">
+      <p class="results-section-title">Capacity unlock</p>
+      <div class="capacity-card g-card">
+        <div class="capacity-stats">
+          <div class="cap-stat">
+            <p class="s-label">Current output</p>
+            <p class="s-val" id="capacity-current-prod">--</p>
+            <p class="s-sub">hires / recruiter / yr</p>
+          </div>
+          <div class="cap-stat hi">
+            <p class="s-label">Peepal benchmark</p>
+            <p class="s-val">~80</p>
+            <p class="s-sub">hires / recruiter / yr</p>
+          </div>
+        </div>
+        <p class="cap-desc" id="capacity-desc">Loading...</p>
+      </div>
+    </section>
+
+    <section class="results-section">
+      <p class="results-section-title">Cost breakdown</p>
+      <div class="cost-compare">
+        <div class="cost-col g-card">
+          <p class="cost-col-label">Current</p>
+          <p class="cost-col-total" id="cc-current-total">--</p>
+          <div class="cost-line"><span>TA payroll</span><span class="clv" id="cc-payroll">--</span></div>
+          <div class="cost-line"><span>Rec. tech</span><span class="clv" id="cc-tech">--</span></div>
+          <div class="cost-line"><span>Vacancy</span><span class="clv" id="cc-vacancy">--</span></div>
+        </div>
+        <div class="cost-col peepal g-card">
+          <p class="cost-col-label">With Peepal</p>
+          <p class="cost-col-total" id="cc-peepal-total">--</p>
+          <div class="cost-line"><span>Service fee</span><span class="clv" id="cc-service-fee">--</span></div>
+          <div class="cost-line"><span>Third party</span><span class="clv">₹0*</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="results-section">
+      <div class="absorbed-card g-card">
+        <p class="absorbed-title">What Peepal absorbs</p>
+        <p class="absorbed-body">Recruitment technology costs are covered under a standard Peepal engagement. This includes ATS, LinkedIn Recruiter, job boards, career page, and recruitment marketing.</p>
+        <p class="absorbed-note">* Third-party assessments and background verification are billed at actuals with prior approval and are not included in this estimate.</p>
+      </div>
+    </section>
+
+    <section class="results-section">
+      <p class="results-section-title">What you entered</p>
+      <div class="method-card g-card">
+        <div class="assume-row"><span class="a-l">Company</span><span class="a-v" id="inp-company">--</span></div>
+        <div class="assume-row"><span class="a-l">Industry</span><span class="a-v" id="inp-industry">--</span></div>
+        <div class="assume-row"><span class="a-l">Company size</span><span class="a-v" id="inp-size">--</span></div>
+        <div class="assume-row"><span class="a-l">Recruiters</span><span class="a-v" id="inp-recruiters">--</span></div>
+        <div class="assume-row"><span class="a-l">TA team cost</span><span class="a-v" id="inp-ta-cost">--</span></div>
+        <div class="assume-row"><span class="a-l">Annual hires</span><span class="a-v" id="inp-hires">--</span></div>
+        <div class="assume-row"><span class="a-l">Average CTC</span><span class="a-v" id="inp-avg-ctc">--</span></div>
+        <div class="assume-row"><span class="a-l">Tech spend</span><span class="a-v" id="inp-tech">--</span></div>
+        <div class="assume-row"><span class="a-l">Time to fill</span><span class="a-v" id="inp-ttf">--</span></div>
+        <div class="assume-row"><span class="a-l">Vacancy cost</span><span class="a-v" id="inp-vacancy">--</span></div>
+      </div>
+    </section>
+
+    <section class="results-section">
+      <p class="results-section-title">Methodology and assumptions</p>
+      <div class="method-card g-card">
+        <div class="assume-row"><span class="a-l">Total hires modelled</span><span class="a-v" id="m-total-hires">--</span></div>
+        <div class="assume-row"><span class="a-l">Fee rate applied</span><span class="a-v" id="m-fee-rate">--</span></div>
+        <div class="assume-row"><span class="a-l">Time-to-fill reduction</span><span class="a-v" id="m-ttf-reduction">--</span></div>
+        <div class="assume-row"><span class="a-l">Bulk discount</span><span class="a-v" id="m-bulk-discount">--</span></div>
+        <p class="method-note">This is an estimate based on your inputs and Peepal's standard pricing model. Actual fees are confirmed at proposal stage.</p>
+      </div>
+    </section>
+
+    <section class="results-section no-print">
+      <div class="cta-card">
+        <h2>Ready to make the switch?</h2>
+        <p>Talk to our team and we'll put together a proposal based on your actual roles.</p>
+        <a href="https://peepalconsulting.com" class="btn-cta">Talk to Peepal</a>
+      </div>
+    </section>
+
+    <button class="recalc-link no-print" onclick="window.location.href='calculator.html'">Recalculate with different inputs</button>
+  </div>
+
+  <div class="modal-backdrop" id="lead-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 class="modal-title">Get your full report</h2>
+      <p class="modal-subtitle">Share your details and print immediately after.</p>
+      <div class="modal-field"><label for="modal-name">Full name</label><input type="text" id="modal-name" placeholder="Priya Sharma" autocomplete="name"></div>
+      <div class="modal-field"><label for="modal-email">Work email</label><input type="email" id="modal-email" placeholder="priya@company.com" autocomplete="email"></div>
+      <div class="modal-field"><label for="modal-phone">Phone <span style="color:var(--grey-500);font-weight:400">(optional)</span></label><input type="tel" id="modal-phone" placeholder="+91 98765 43210" autocomplete="tel"></div>
+      <button class="btn-modal-submit" type="button" id="btn-modal-submit">Print my report</button>
+      <button class="modal-skip" type="button" id="btn-modal-skip">Print without sharing details</button>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/results.js"></script>
+</body>
+</html>
