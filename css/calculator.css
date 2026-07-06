@@ -143,6 +143,10 @@
   color: var(--orange-dark);
   box-shadow: 0 0 0 1px var(--orange);
 }
+.choice-item input:focus-visible + label {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
 
 /* Hiring — simple two fields */
 .hiring-simple { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -186,6 +190,10 @@
 }
 .ttf-preset-item input:checked + label .ttf-days { color: var(--orange); }
 .ttf-preset-item input:checked + label .ttf-sub  { color: var(--orange-dark); }
+.ttf-preset-item input:focus-visible + label {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
 
 .ttf-custom-wrap { margin-top: 4px; }
 .ttf-custom-wrap label { font-size: 12px; font-weight: 500; color: var(--grey-500); margin-bottom: 6px; display: block; }

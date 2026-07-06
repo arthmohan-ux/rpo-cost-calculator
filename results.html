@@ -52,6 +52,14 @@
   <!-- Email gate overlay -->
   <div class="email-gate" id="email-gate">
     <div class="email-gate-card">
+      <button type="button" class="close-btn" id="btn-gate-close" aria-label="Close">&times;</button>
+      <div class="close-confirm hidden" id="gate-close-confirm">
+        <p class="close-confirm-text">Are you sure? You'll miss your personalised report.</p>
+        <div class="close-confirm-btns">
+          <button type="button" class="close-confirm-yes" id="btn-gate-close-yes">Yes, close</button>
+          <button type="button" class="close-confirm-no" id="btn-gate-close-no">No, go back</button>
+        </div>
+      </div>
       <h2 class="email-gate-title">See your full analysis</h2>
       <p class="email-gate-sub">Enter your work email to unlock the detailed breakdown.</p>
       <div class="email-gate-field">
@@ -207,6 +215,14 @@
   <!-- Lead modal (shared by Print Report, Talk to Peepal, and Ctrl+P) -->
   <div class="modal-backdrop" id="lead-modal" role="dialog" aria-modal="true">
     <div class="modal-card">
+      <button type="button" class="close-btn" id="btn-modal-close" aria-label="Close">&times;</button>
+      <div class="close-confirm hidden" id="modal-close-confirm">
+        <p class="close-confirm-text">Are you sure you want to close?</p>
+        <div class="close-confirm-btns">
+          <button type="button" class="close-confirm-yes" id="btn-modal-close-yes">Yes, close</button>
+          <button type="button" class="close-confirm-no" id="btn-modal-close-no">No, go back</button>
+        </div>
+      </div>
       <h2 class="modal-title" id="modal-title">Get your full report</h2>
       <p class="modal-subtitle" id="modal-subtitle">Share your details and print immediately after.</p>
       <div class="modal-field"><label for="modal-name">Full name</label><input type="text" id="modal-name" placeholder="Priya Sharma" autocomplete="name"></div>

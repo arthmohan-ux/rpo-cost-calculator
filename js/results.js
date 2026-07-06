@@ -30,6 +30,38 @@ function indianFormat(num) {
 function pct(n) { return Math.round(n * 100) + '%'; }
 function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
 
+// --- VALIDATION HELPERS ---
+var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+
+function validateEmail(str) {
+  return EMAIL_RE.test((str || '').trim());
+}
+
+function validatePhone(str) {
+  if (!str || !str.trim()) return true; // optional field, empty is valid
+  var digits = str.replace(/[\s\-\(\)]/g, '');
+  if (digits.indexOf('+91') === 0) digits = digits.substring(3);
+  if (digits.indexOf('91') === 0 && digits.length === 12) digits = digits.substring(2);
+  digits = digits.replace(/\D/g, '');
+  return digits.length === 10;
+}
+
+function showFieldError(inputEl, msg) {
+  clearFieldError(inputEl);
+  inputEl.style.borderColor = 'var(--error, #c9372c)';
+  var span = document.createElement('span');
+  span.className = 'field-error';
+  span.textContent = msg;
+  inputEl.parentNode.appendChild(span);
+}
+
+function clearFieldError(inputEl) {
+  inputEl.style.borderColor = '';
+  var parent = inputEl.parentNode;
+  var existing = parent.querySelector('.field-error');
+  if (existing) parent.removeChild(existing);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var inputsRaw = localStorage.getItem('peepal_calc_inputs');
   var resultsRaw = localStorage.getItem('peepal_calc_results');
@@ -145,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var points = [];
     points.push('Peepal takes over your full hiring function, replacing internal TA team, recruitment technology, and agency spend.');
     if (r.techAbsorbed > 0) points.push(fmt(r.techAbsorbed) + ' in recruitment tech costs are absorbed by Peepal under a standard engagement.');
-    if (r.vacancySavings > 0) points.push('Vacancy cost drops by ' + fmt(r.vacancySavings) + ' with a 35% reduction in time to fill.');
+    if (r.vacancySavings > 0) points.push('Vacancy cost drops by ' + fmt(r.vacancySavings) + ' from a 35% reduction in time to fill.');
     if (r.unclosedSavings > 0) points.push('Peepal closes your ' + r.unclosedRoles + ' unclosed roles, saving ' + fmt(r.unclosedSavings) + ' in vacancy costs.');
     if (inp.ttf.days > 0) points.push('Time to fill drops from ' + inp.ttf.days + ' to ~' + r.newTTF + ' days. For niche roles, this may vary.');
     points.push('Your ' + inp.ta.recruiters + ' recruiter' + (inp.ta.recruiters > 1 ? 's' : '') + ' currently close ' + r.recruiterProductivity + ' hires per year each. Peepal can handle up to ~80 hires per recruiter per year for standard roles if needed.');
@@ -227,14 +259,34 @@ document.addEventListener('DOMContentLoaded', function() {
     contentEl.classList.add('blurred');
 
     // Unlock button
-    document.getElementById('btn-gate-unlock').addEventListener('click', function() {
-      var email = document.getElementById('gate-email').value.trim();
-      if (!email || email.indexOf('@') === -1) {
-        document.getElementById('gate-email').style.borderColor = 'var(--error, #e24b4a)';
+    var gateEmailInput = document.getElementById('gate-email');
+
+    function tryGateUnlock() {
+      var email = gateEmailInput.value.trim();
+      if (!validateEmail(email)) {
+        showFieldError(gateEmailInput, 'Enter a valid work email');
         return;
       }
+      clearFieldError(gateEmailInput);
       _gateEmail = email;
       unlockResults(email);
+    }
+
+    document.getElementById('btn-gate-unlock').addEventListener('click', tryGateUnlock);
+
+    // Enter key in gate email input
+    gateEmailInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); tryGateUnlock(); }
+    });
+
+    // Blur validation on gate email
+    gateEmailInput.addEventListener('blur', function() {
+      var val = gateEmailInput.value.trim();
+      if (val && !validateEmail(val)) {
+        showFieldError(gateEmailInput, 'Enter a valid work email');
+      } else {
+        clearFieldError(gateEmailInput);
+      }
     });
 
     // Skip button -> show confirmation
@@ -250,7 +302,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btn-confirm-back').addEventListener('click', function() {
       confirmEl.classList.add('hidden');
       skipBtn.style.display = '';
-      document.getElementById('gate-email').focus();
+      gateEmailInput.focus();
+    });
+
+    // Gate close (X) button
+    var gateCloseConfirm = document.getElementById('gate-close-confirm');
+    document.getElementById('btn-gate-close').addEventListener('click', function() {
+      gateCloseConfirm.classList.remove('hidden');
+    });
+    document.getElementById('btn-gate-close-yes').addEventListener('click', function() {
+      gateCloseConfirm.classList.add('hidden');
+      unlockResults(null);
+    });
+    document.getElementById('btn-gate-close-no').addEventListener('click', function() {
+      gateCloseConfirm.classList.add('hidden');
     });
   }
 
@@ -281,6 +346,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var skipBtn = document.getElementById('btn-modal-skip');
     var thanksEl = document.getElementById('modal-thanks');
     thanksEl.classList.add('hidden');
+    // Reset close confirmation and field errors when opening
+    var mcConfirm = document.getElementById('modal-close-confirm');
+    if (mcConfirm) mcConfirm.classList.add('hidden');
+    clearFieldError(document.getElementById('modal-name'));
+    clearFieldError(document.getElementById('modal-email'));
+    clearFieldError(document.getElementById('modal-phone'));
     if (action === 'talk') {
       titleEl.textContent = 'Talk to our team';
       subEl.textContent = 'Share your details and we\'ll reach out with a proposal.';
@@ -306,16 +377,70 @@ document.addEventListener('DOMContentLoaded', function() {
     openModal('talk');
   });
 
+  // Modal field references
+  var modalNameInput = document.getElementById('modal-name');
+  var modalEmailInput = document.getElementById('modal-email');
+  var modalPhoneInput = document.getElementById('modal-phone');
+
+  // Blur validation on modal fields
+  modalNameInput.addEventListener('blur', function() {
+    var val = modalNameInput.value.trim();
+    if (val && val.length < 2) {
+      showFieldError(modalNameInput, 'Enter your full name');
+    } else {
+      clearFieldError(modalNameInput);
+    }
+  });
+  modalEmailInput.addEventListener('blur', function() {
+    var val = modalEmailInput.value.trim();
+    if (val && !validateEmail(val)) {
+      showFieldError(modalEmailInput, 'Enter a valid work email');
+    } else {
+      clearFieldError(modalEmailInput);
+    }
+  });
+  modalPhoneInput.addEventListener('blur', function() {
+    var val = modalPhoneInput.value.trim();
+    if (val && !validatePhone(val)) {
+      showFieldError(modalPhoneInput, 'Enter a valid 10-digit Indian mobile number');
+    } else {
+      clearFieldError(modalPhoneInput);
+    }
+  });
+
   // Modal submit
   document.getElementById('btn-modal-submit').addEventListener('click', function() {
-    var name = document.getElementById('modal-name').value.trim();
-    var email = document.getElementById('modal-email').value.trim();
-    var phone = document.getElementById('modal-phone').value.trim();
-    if (!name || !email) {
-      document.getElementById('modal-name').style.borderColor = name ? '' : 'var(--error)';
-      document.getElementById('modal-email').style.borderColor = email ? '' : 'var(--error)';
-      return;
+    var name = modalNameInput.value.trim();
+    var email = modalEmailInput.value.trim();
+    var phone = modalPhoneInput.value.trim();
+    var valid = true;
+
+    // Name validation
+    if (!name || name.length < 2) {
+      showFieldError(modalNameInput, 'Enter your full name');
+      valid = false;
+    } else {
+      clearFieldError(modalNameInput);
     }
+
+    // Email validation
+    if (!validateEmail(email)) {
+      showFieldError(modalEmailInput, 'Enter a valid work email');
+      valid = false;
+    } else {
+      clearFieldError(modalEmailInput);
+    }
+
+    // Phone validation (optional, only if something entered)
+    if (phone && !validatePhone(phone)) {
+      showFieldError(modalPhoneInput, 'Enter a valid 10-digit Indian mobile number');
+      valid = false;
+    } else {
+      clearFieldError(modalPhoneInput);
+    }
+
+    if (!valid) return;
+
     // Store for cross-fill
     _gateEmail = email;
     var source = _modalAction === 'talk' ? 'talk-to-peepal' : 'print-report';
@@ -341,6 +466,19 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('lead-modal').classList.remove('visible');
     ensureUnblurred();
     window.print();
+  });
+
+  // Modal close (X) button
+  var modalCloseConfirm = document.getElementById('modal-close-confirm');
+  document.getElementById('btn-modal-close').addEventListener('click', function() {
+    modalCloseConfirm.classList.remove('hidden');
+  });
+  document.getElementById('btn-modal-close-yes').addEventListener('click', function() {
+    modalCloseConfirm.classList.add('hidden');
+    document.getElementById('lead-modal').classList.remove('visible');
+  });
+  document.getElementById('btn-modal-close-no').addEventListener('click', function() {
+    modalCloseConfirm.classList.add('hidden');
   });
 
   // --- INTERCEPT Ctrl+P / Cmd+P ---

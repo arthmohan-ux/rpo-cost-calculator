@@ -245,3 +245,62 @@
 }
 
 .kpi-note { font-size: 11px; color: var(--grey-500); margin-top: 8px; line-height: 1.5; }
+
+/* Close (X) button for gate and modal */
+.close-btn {
+  position: absolute; top: 10px; right: 10px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(0,0,0,0.06); border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1; color: var(--grey-500);
+  cursor: pointer; transition: background 150ms, color 150ms;
+  font-family: var(--font); padding: 0;
+}
+.close-btn:hover { background: rgba(0,0,0,0.12); color: var(--grey-700); }
+
+/* Close confirmation overlay inside cards */
+.close-confirm {
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.06);
+}
+.close-confirm.hidden { display: none; }
+.close-confirm-text { font-size: 13px; color: var(--grey-700); margin-bottom: 12px; line-height: 1.5; text-align: center; }
+.close-confirm-btns { display: flex; gap: 8px; justify-content: center; }
+.close-confirm-yes {
+  height: 36px; padding: 0 16px; border-radius: 7px; font-size: 13px; font-weight: 500;
+  background: none; border: 1px solid rgba(0,0,0,0.12); color: var(--grey-500);
+  cursor: pointer; font-family: var(--font); transition: all 150ms;
+}
+.close-confirm-yes:hover { border-color: var(--grey-500); color: var(--grey-700); }
+.close-confirm-no {
+  height: 36px; padding: 0 16px; border-radius: 7px; font-size: 13px; font-weight: 600;
+  background: var(--orange); border: none; color: var(--white);
+  cursor: pointer; font-family: var(--font); transition: background 150ms;
+}
+.close-confirm-no:hover { background: var(--orange-dark); }
+
+/* Inline field validation errors */
+.field-error {
+  display: block; font-size: 12px; color: var(--error); margin-top: 5px; line-height: 1.4;
+}
+
+/* Focus-visible overrides for results page buttons */
+.btn-print:focus-visible,
+.btn-cta:focus-visible,
+.hh-explain-btn:focus-visible,
+.btn-modal-submit:focus-visible,
+.modal-skip:focus-visible,
+.email-gate-skip:focus-visible,
+.email-gate-field button:focus-visible,
+.recalc-link:focus-visible,
+.close-btn:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Make email-gate-card and modal-card position relative for close button */
+.email-gate-card { position: relative; }
+.modal-card { position: relative; }
+
+/* Close button color override for modal on light bg */
+.modal-card .close-btn { background: rgba(0,0,0,0.06); }

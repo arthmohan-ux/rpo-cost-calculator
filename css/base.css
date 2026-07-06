@@ -33,8 +33,19 @@
 html { font-family: var(--font); font-size: 16px; -webkit-text-size-adjust: 100%; color: var(--black); }
 body { min-height: 100vh; line-height: 1.5; }
 a { color: var(--orange); text-decoration: none; }
-button { font-family: var(--font); cursor: pointer; border: none; outline: none; }
-input, select, textarea { font-family: var(--font); font-size: 16px; outline: none; }
+button { font-family: var(--font); cursor: pointer; border: none; }
+input, select, textarea { font-family: var(--font); font-size: 16px; }
+
+/* Global focus-visible styles for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Override for inputs/selects that have their own focus styles */
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: none;
+}
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 .hidden { display: none !important; }
 .text-error { color: var(--error); font-size: 12px; margin-top: 5px; display: block; }
