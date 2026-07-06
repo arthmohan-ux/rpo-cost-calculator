@@ -4,7 +4,7 @@ var completedSteps = {};
 
 var TRANSITION_MESSAGES = {
   1: function() {
-    return 'Got it. Setting up your profile...';
+    return 'Got it. Setting up your benchmark...';
   },
   2: function() {
     var bench = getBenchmark();

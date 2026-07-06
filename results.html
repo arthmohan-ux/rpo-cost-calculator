@@ -32,11 +32,19 @@
         <p class="hh-label">If Peepal closes your unclosed roles</p>
         <p class="hh-amount" id="hh-unclosed-fee">--</p>
         <p class="hh-sub" id="hh-unclosed-sub">--</p>
+        <button class="hh-explain-btn" id="btn-explain-unclosed" type="button">Explain further <span class="hh-chevron">&#9662;</span></button>
+        <div class="hh-explain-body hidden" id="explain-unclosed">
+          <p class="hh-explain-text" id="explain-unclosed-text"></p>
+        </div>
       </div>
-      <div class="hero-highlight-card">
+      <div class="hero-highlight-card" id="hero-total-card">
         <p class="hh-label">If Peepal handles all your hiring</p>
         <p class="hh-amount" id="hh-total-savings">--</p>
         <p class="hh-sub" id="hh-total-sub">--</p>
+        <button class="hh-explain-btn" id="btn-explain-total" type="button">Explain further <span class="hh-chevron">&#9662;</span></button>
+        <div class="hh-explain-body hidden" id="explain-total">
+          <p class="hh-explain-text" id="explain-total-text"></p>
+        </div>
       </div>
     </div>
   </div>
@@ -189,23 +197,24 @@
       <div class="cta-card">
         <h2>Ready to explore this further?</h2>
         <p>Talk to our team for a proposal based on your actual roles and hiring plan.</p>
-        <a href="https://peepalconsulting.com/contact" class="btn-cta" target="_blank" rel="noopener">Talk to Peepal</a>
+        <button class="btn-cta" type="button" id="btn-talk-peepal">Talk to Peepal</button>
       </div>
     </section>
 
     <button class="recalc-link no-print" onclick="window.location.href='calculator.html'">Recalculate with different inputs</button>
   </div>
 
-  <!-- Lead modal -->
+  <!-- Lead modal (shared by Print Report, Talk to Peepal, and Ctrl+P) -->
   <div class="modal-backdrop" id="lead-modal" role="dialog" aria-modal="true">
     <div class="modal-card">
-      <h2 class="modal-title">Get your full report</h2>
-      <p class="modal-subtitle">Share your details and print immediately after.</p>
+      <h2 class="modal-title" id="modal-title">Get your full report</h2>
+      <p class="modal-subtitle" id="modal-subtitle">Share your details and print immediately after.</p>
       <div class="modal-field"><label for="modal-name">Full name</label><input type="text" id="modal-name" placeholder="Priya Sharma" autocomplete="name"></div>
       <div class="modal-field"><label for="modal-email">Work email</label><input type="email" id="modal-email" placeholder="priya@company.com" autocomplete="email"></div>
       <div class="modal-field"><label for="modal-phone">Phone <span style="color:var(--grey-500);font-weight:400">(optional)</span></label><input type="tel" id="modal-phone" placeholder="+91 98765 43210" autocomplete="tel"></div>
       <button class="btn-modal-submit" type="button" id="btn-modal-submit">Print my report</button>
       <button class="modal-skip" type="button" id="btn-modal-skip">Print without sharing details</button>
+      <p class="modal-thanks hidden" id="modal-thanks">Thanks! Our team will be in touch shortly.</p>
     </div>
   </div>
 

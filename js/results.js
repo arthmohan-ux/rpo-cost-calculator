@@ -79,6 +79,33 @@ document.addEventListener('DOMContentLoaded', function() {
     setText('hh-total-sub', 'All ' + r.totalHires + ' hires handled by Peepal');
   }
 
+  // --- EXPLAIN FURTHER (Groq AI) ---
+  var explanations = { unclosed: '', total: '' };
+
+  function toggleExplain(btnId, bodyId, textId, type) {
+    var btn = document.getElementById(btnId);
+    var body = document.getElementById(bodyId);
+    var textEl = document.getElementById(textId);
+
+    btn.addEventListener('click', function() {
+      var isOpen = btn.classList.contains('active');
+      btn.classList.toggle('active');
+      body.classList.toggle('hidden');
+
+      // Generate on first open
+      if (!isOpen && !explanations[type]) {
+        textEl.innerHTML = 'Thinking<span class="loading-dots"></span>';
+        generateExplanation(type, r, inp, function(text) {
+          explanations[type] = text;
+          textEl.textContent = text;
+        });
+      }
+    });
+  }
+
+  toggleExplain('btn-explain-unclosed', 'explain-unclosed', 'explain-unclosed-text', 'unclosed');
+  toggleExplain('btn-explain-total', 'explain-total', 'explain-total-text', 'total');
+
   // --- KPIs ---
   setText('kpi-current-cost', fmt(r.currentTotal));
   setText('kpi-peepal-cost', fmt(r.peepalTotal));
@@ -189,6 +216,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('m-unclosed-row').classList.remove('hidden');
   }
 
+  // --- SHARED STATE ---
+  var _gateEmail = '';        // email from gate, carried to modal
+  var _modalAction = 'print'; // 'print' or 'talk'
+
   // --- EMAIL GATE ---
   var gateEl = document.getElementById('email-gate');
   var contentEl = document.getElementById('results-content');
@@ -202,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('gate-email').style.borderColor = 'var(--error, #e24b4a)';
         return;
       }
+      _gateEmail = email;
       unlockResults(email);
     });
 
@@ -212,11 +244,9 @@ document.addEventListener('DOMContentLoaded', function() {
       skipBtn.style.display = 'none';
       confirmEl.classList.remove('hidden');
     });
-    // Confirm skip
     document.getElementById('btn-confirm-skip').addEventListener('click', function() {
       unlockResults(null);
     });
-    // Go back to email input
     document.getElementById('btn-confirm-back').addEventListener('click', function() {
       confirmEl.classList.add('hidden');
       skipBtn.style.display = '';
@@ -233,11 +263,169 @@ document.addEventListener('DOMContentLoaded', function() {
     contentEl.classList.remove('blurred');
   }
 
-  // --- PRINT ---
-  document.getElementById('btn-print-trigger').addEventListener('click', showLeadModal);
-  document.getElementById('btn-modal-submit').addEventListener('click', submitLead);
-  document.getElementById('btn-modal-skip').addEventListener('click', function() { hideLeadModal(); window.print(); });
+  function ensureUnblurred() {
+    if (gateEl) gateEl.classList.add('hidden');
+    if (contentEl) contentEl.classList.remove('blurred');
+  }
+
+  // --- UNIFIED MODAL ---
+  function openModal(action) {
+    _modalAction = action;
+    // Pre-fill email from gate if available
+    var emailField = document.getElementById('modal-email');
+    if (_gateEmail && !emailField.value) emailField.value = _gateEmail;
+    // Context-aware labels
+    var titleEl = document.getElementById('modal-title');
+    var subEl = document.getElementById('modal-subtitle');
+    var submitBtn = document.getElementById('btn-modal-submit');
+    var skipBtn = document.getElementById('btn-modal-skip');
+    var thanksEl = document.getElementById('modal-thanks');
+    thanksEl.classList.add('hidden');
+    if (action === 'talk') {
+      titleEl.textContent = 'Talk to our team';
+      subEl.textContent = 'Share your details and we\'ll reach out with a proposal.';
+      submitBtn.textContent = 'Get in touch';
+      skipBtn.style.display = 'none';
+    } else {
+      titleEl.textContent = 'Get your full report';
+      subEl.textContent = 'Share your details and print immediately after.';
+      submitBtn.textContent = 'Print my report';
+      skipBtn.style.display = '';
+    }
+    document.getElementById('lead-modal').classList.add('visible');
+    document.getElementById('modal-name').focus();
+  }
+
+  // Print report button
+  document.getElementById('btn-print-trigger').addEventListener('click', function() {
+    openModal('print');
+  });
+
+  // Talk to Peepal button
+  document.getElementById('btn-talk-peepal').addEventListener('click', function() {
+    openModal('talk');
+  });
+
+  // Modal submit
+  document.getElementById('btn-modal-submit').addEventListener('click', function() {
+    var name = document.getElementById('modal-name').value.trim();
+    var email = document.getElementById('modal-email').value.trim();
+    var phone = document.getElementById('modal-phone').value.trim();
+    if (!name || !email) {
+      document.getElementById('modal-name').style.borderColor = name ? '' : 'var(--error)';
+      document.getElementById('modal-email').style.borderColor = email ? '' : 'var(--error)';
+      return;
+    }
+    // Store for cross-fill
+    _gateEmail = email;
+    var source = _modalAction === 'talk' ? 'talk-to-peepal' : 'print-report';
+    var payload = buildLeadPayload(email, name, phone, source);
+    sendLead(payload);
+
+    if (_modalAction === 'talk') {
+      // Show thank you, auto-close after 2s
+      document.getElementById('modal-thanks').classList.remove('hidden');
+      setTimeout(function() {
+        document.getElementById('lead-modal').classList.remove('visible');
+        document.getElementById('modal-thanks').classList.add('hidden');
+      }, 2000);
+    } else {
+      document.getElementById('lead-modal').classList.remove('visible');
+      ensureUnblurred();
+      window.print();
+    }
+  });
+
+  // Modal skip (print only, hidden for talk)
+  document.getElementById('btn-modal-skip').addEventListener('click', function() {
+    document.getElementById('lead-modal').classList.remove('visible');
+    ensureUnblurred();
+    window.print();
+  });
+
+  // --- INTERCEPT Ctrl+P / Cmd+P ---
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+      e.preventDefault();
+      openModal('print');
+    }
+  });
+
+  // Also catch window.onbeforeprint for right-click > Print
+  var _printAllowed = false;
+  window.addEventListener('beforeprint', function(e) {
+    if (!_printAllowed) {
+      // Can't fully cancel beforeprint, but we ensure content is unblurred
+      ensureUnblurred();
+    }
+  });
 });
+
+// --- GROQ AI EXPLANATIONS ---
+
+// Cache so we can include in the sheet payload
+var _explanationCache = { unclosed: '', total: '' };
+
+function generateExplanation(type, r, inp, callback) {
+  if (!CONFIG.groqApiKey || CONFIG.groqApiKey === 'YOUR_GROQ_KEY_HERE') {
+    callback('Add your Groq API key in config.js to enable AI explanations.');
+    return;
+  }
+
+  var prompt;
+  if (type === 'unclosed') {
+    prompt = 'You are explaining a simple cost calculation to a business leader in India. Keep it to 3 sentences max. Use plain language, no jargon.\n\n'
+      + 'Their company had ' + r.unclosedRoles + ' roles that went unfilled last year. '
+      + 'Each open role costs roughly ' + fmt(Math.round(inp.vacancy.costPerDay)) + ' per day in lost productivity. '
+      + 'These roles stayed open for at least ' + Math.max(inp.ttf.days || 0, 90) + ' days. '
+      + 'That cost them ' + fmt(r.unclosedCost) + ' in total. '
+      + 'Peepal would close most of these roles, bringing that vacancy cost down to ' + fmt(r.peepalUnclosedCost) + ', '
+      + 'saving ' + fmt(r.unclosedSavings) + '.\n\n'
+      + 'Explain this simply. Start with "Your X unclosed roles..." Use the rupee figures provided. Do not use bullet points.';
+  } else {
+    prompt = 'You are explaining a hiring cost comparison to a business leader in India. Keep it to 4 sentences max. Use plain language, no jargon.\n\n'
+      + 'Current annual hiring costs:\n'
+      + '- TA team payroll: ' + fmt(r.currentTA) + '\n'
+      + '- Recruitment technology: ' + fmt(r.currentTech) + '\n'
+      + '- Vacancy cost (open roles losing productivity): ' + fmt(r.currentVacancyCost) + '\n'
+      + (r.unclosedCost > 0 ? '- Unclosed roles vacancy: ' + fmt(r.unclosedCost) + '\n' : '')
+      + '- Total: ' + fmt(r.currentTotal) + '\n\n'
+      + 'With Peepal (takes over full hiring function, no TA or tech needed):\n'
+      + '- Peepal fee (' + r.totalHires + ' hires x ' + fmt(r.avgCtc) + ' avg CTC x 8.33%): ' + fmt(r.netFee) + '\n'
+      + (r.bulkDiscount > 0 ? '- Bulk discount applied: ' + fmt(r.bulkDiscount) + '\n' : '')
+      + '- Reduced vacancy cost (35% faster hiring): ' + fmt(r.peepalVacancyCost) + '\n'
+      + (r.peepalUnclosedCost > 0 ? '- Residual unclosed cost: ' + fmt(r.peepalUnclosedCost) + '\n' : '')
+      + '- Total: ' + fmt(r.peepalTotal) + '\n\n'
+      + (r.isNetSaving
+        ? 'Net savings: ' + fmt(r.netDifference) + ' (' + Math.round(r.diffPct * 100) + '% less).\n'
+        : 'Peepal costs ' + fmt(Math.abs(r.netDifference)) + ' more but replaces entire TA function.\n')
+      + '\nExplain this comparison simply. Start with "Right now, your company spends..." Use the rupee figures provided. Do not use bullet points.';
+  }
+
+  fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + CONFIG.groqApiKey
+    },
+    body: JSON.stringify({
+      model: CONFIG.groqModel || 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 300,
+      temperature: 0.3
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    var text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    text = text || 'Could not generate explanation.';
+    _explanationCache[type] = text;
+    callback(text);
+  })
+  .catch(function() {
+    callback('Could not connect to AI service. Check your Groq API key.');
+  });
+}
 
 // --- LEAD COLLECTION HELPERS ---
 
@@ -284,7 +472,10 @@ function buildLeadPayload(email, name, phone, source) {
     peepalWins: res.isNetSaving ? 'Yes' : 'No',
     vacancySavings: res.vacancySavings || '',
     unclosedSavings: res.unclosedSavings || 0,
-    techAbsorbed: res.techAbsorbed || ''
+    techAbsorbed: res.techAbsorbed || '',
+    // AI explanations (if user clicked "explain further")
+    explainUnclosed: _explanationCache.unclosed || '',
+    explainTotal: _explanationCache.total || ''
   };
 }
 
@@ -304,19 +495,3 @@ function sendLead(payload) {
   localStorage.setItem('peepal_leads', JSON.stringify(leads));
 }
 
-function showLeadModal() { document.getElementById('lead-modal').classList.add('visible'); document.getElementById('modal-name').focus(); }
-function hideLeadModal() { document.getElementById('lead-modal').classList.remove('visible'); }
-function submitLead() {
-  var name = document.getElementById('modal-name').value.trim();
-  var email = document.getElementById('modal-email').value.trim();
-  var phone = document.getElementById('modal-phone').value.trim();
-  if (!name || !email) {
-    document.getElementById('modal-name').style.borderColor = name ? '' : 'var(--error)';
-    document.getElementById('modal-email').style.borderColor = email ? '' : 'var(--error)';
-    return;
-  }
-  var payload = buildLeadPayload(email, name, phone, 'print-report');
-  sendLead(payload);
-  hideLeadModal();
-  window.print();
-}

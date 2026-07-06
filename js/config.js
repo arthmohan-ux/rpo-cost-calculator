@@ -36,6 +36,11 @@ var CONFIG = {
   // Deploy the script from appscript-Code.gs and paste the URL here
   leadEndpoint: 'https://script.google.com/macros/s/AKfycbwz6dqRJx9-bgkJtyC4M183ep6EVTyBxxYnQmQkgb_daVy5eRTYQu7yguVPBGoY2VM/exec',
 
+  // Groq API for AI-powered explanations on hero cards
+  // Get a free key at https://console.groq.com/keys
+  groqApiKey: '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',
+  groqModel: 'llama-3.1-8b-instant',
+
   benchmarks: {
     "BFSI / Fintech": {
       "<100": { cph: 65000, ttf: 52 }, "100-500": { cph: 72000, ttf: 58 },
