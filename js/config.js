@@ -34,7 +34,7 @@ var CONFIG = {
 
   // Google Apps Script web app URL for lead collection
   // Deploy the script from appscript-Code.gs and paste the URL here
-  leadEndpoint: 'https://script.google.com/macros/s/AKfycbyHGHkIv5ZpHgbsHKDE8eudXHlZYYqUTBWmabTV4cIfWWEBGU2rpSPkgo4ZpNO6pSd1/exec',
+  leadEndpoint: 'https://script.google.com/macros/s/AKfycbwV6i_654K63eisz7l6yTh4fMjtAsU3p4DwMub8WXDtYay2kepiJRp9iqfTnVgJgfgG/exec',
 
 
   benchmarks: {
