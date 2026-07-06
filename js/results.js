@@ -294,8 +294,8 @@ function sendLead(payload) {
   if (endpoint && endpoint !== 'YOUR_ENDPOINT_HERE') {
     fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      mode: 'no-cors'
     }).catch(function() {});
   }
   // Always store locally as backup
