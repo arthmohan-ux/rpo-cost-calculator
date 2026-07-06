@@ -406,28 +406,50 @@ function generateExplanation(type, r, inp, callback) {
   // Proxy through Apps Script (Groq key is server-side)
   fetch(endpoint, {
     method: 'POST',
+    redirect: 'follow',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ _action: 'explain', prompt: prompt })
   })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
+  .then(function(res) {
+    // Apps Script returns 302 redirect; fetch follows it.
+    // Read as text first to handle non-JSON error pages gracefully.
+    return res.text();
+  })
+  .then(function(raw) {
+    var data;
+    try { data = JSON.parse(raw); } catch (e) {
+      console.error('[Explain] Non-JSON response:', raw.substring(0, 200));
+      throw new Error('Response was not JSON');
+    }
+    if (data.error) {
+      console.error('[Explain] Server error:', data.error);
+      callback('AI service error: ' + (typeof data.error === 'string' ? data.error : JSON.stringify(data.error)));
+      return;
+    }
     var text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
     text = text || 'Could not generate explanation.';
     _explanationCache[type] = text;
     callback(text);
   })
-  .catch(function() {
-    callback('Could not connect to AI service.');
+  .catch(function(err) {
+    console.error('[Explain] Fetch failed:', err);
+    callback('Could not connect to AI service. (' + (err.message || 'network error') + ')');
   });
 }
 
 // --- LEAD COLLECTION HELPERS ---
 
+function istTimestamp() {
+  var d = new Date();
+  var ist = new Date(d.getTime() + (5.5 * 60 * 60 * 1000));
+  return ist.toISOString().replace('T', ' ').replace('Z', '') + ' IST';
+}
+
 function buildLeadPayload(email, name, phone, source) {
   var inp = JSON.parse(localStorage.getItem('peepal_calc_inputs') || '{}');
   var res = JSON.parse(localStorage.getItem('peepal_calc_results') || '{}');
   return {
-    timestamp: new Date().toISOString(),
+    timestamp: istTimestamp(),
     email: email || '',
     name: name || '',
     phone: phone || '',
