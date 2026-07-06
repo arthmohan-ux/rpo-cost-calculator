@@ -32,13 +32,9 @@ var CONFIG = {
   timeToFillReduction: 0.35,
   techCoveredByPeepal: true,
 
-  // Groq AI for explain-further cards (free tier key)
-  groqApiKey: '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',
-  groqModel: 'llama-3.1-8b-instant',
-
-  // Google Apps Script web app URL for lead collection
-  // Deploy the script from appscript-Code.gs and paste the URL here
-  leadEndpoint: 'https://script.google.com/macros/s/AKfycbyzBgatyBzkkqx5YArf0voHZQHLfBMAk8DTM8lSKwjnMhTfVMaIqRK8rAPVg0vkk8Ua/exec',
+  // Google Apps Script web app URL (handles lead collection + Groq AI proxy)
+  // Deploy appscript-Code.gs following its setup instructions and paste URL here
+  leadEndpoint: 'YOUR_ENDPOINT_HERE',
 
 
   benchmarks: {

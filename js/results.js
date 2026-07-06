@@ -367,8 +367,9 @@ document.addEventListener('DOMContentLoaded', function() {
 var _explanationCache = { unclosed: '', total: '' };
 
 function generateExplanation(type, r, inp, callback) {
-  if (!CONFIG.groqApiKey || CONFIG.groqApiKey === 'YOUR_GROQ_KEY_HERE') {
-    callback('Add your Groq API key in config.js to enable AI explanations.');
+  var endpoint = CONFIG.leadEndpoint;
+  if (!endpoint || endpoint === 'YOUR_ENDPOINT_HERE') {
+    callback('Configure your Apps Script endpoint in config.js to enable AI explanations.');
     return;
   }
 
@@ -402,28 +403,38 @@ function generateExplanation(type, r, inp, callback) {
       + '\nExplain this comparison simply. Start with "Right now, your company spends..." Use the rupee figures provided. Do not use bullet points.';
   }
 
-  fetch('https://api.groq.com/openai/v1/chat/completions', {
+  // Proxy through Apps Script (Groq key is server-side in Script Properties)
+  fetch(endpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + CONFIG.groqApiKey
-    },
-    body: JSON.stringify({
-      model: CONFIG.groqModel || 'llama-3.1-8b-instant',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 300,
-      temperature: 0.3
-    })
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ _action: 'explain', prompt: prompt })
   })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
+  .then(function(res) { return res.text(); })
+  .then(function(raw) {
+    var data;
+    try { data = JSON.parse(raw); } catch (e) {
+      console.error('[Explain] Non-JSON response:', raw.substring(0, 300));
+      throw new Error('Response was not JSON');
+    }
+    if (data.error) {
+      console.error('[Explain] Server error:', data.error);
+      callback('AI setup error: ' + (typeof data.error === 'string' ? data.error : JSON.stringify(data.error)));
+      return;
+    }
+    if (data.status === 'ok') {
+      // Hit the lead endpoint without proxy routing - Apps Script needs redeployment
+      callback('Apps Script needs redeployment with the proxy version. See appscript-Code.gs setup instructions.');
+      return;
+    }
     var text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
     text = text || 'Could not generate explanation.';
     _explanationCache[type] = text;
     callback(text);
   })
-  .catch(function() {
-    callback('Could not connect to AI service.');
+  .catch(function(err) {
+    console.error('[Explain] Fetch failed:', err);
+    callback('Could not connect to AI service. (' + (err.message || 'network error') + ')');
   });
 }
 
