@@ -32,9 +32,13 @@ var CONFIG = {
   timeToFillReduction: 0.35,
   techCoveredByPeepal: true,
 
+  // Groq AI for explain-further cards (free tier key)
+  groqApiKey: 'YOUR_GROQ_KEY_HERE',
+  groqModel: 'llama-3.1-8b-instant',
+
   // Google Apps Script web app URL for lead collection
   // Deploy the script from appscript-Code.gs and paste the URL here
-  leadEndpoint: 'https://script.google.com/macros/s/AKfycbwV6i_654K63eisz7l6yTh4fMjtAsU3p4DwMub8WXDtYay2kepiJRp9iqfTnVgJgfgG/exec',
+  leadEndpoint: 'YOUR_ENDPOINT_HERE',
 
 
   benchmarks: {
