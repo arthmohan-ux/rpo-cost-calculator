@@ -34,7 +34,7 @@ var CONFIG = {
 
   // Google Apps Script web app URL (handles lead collection + Groq AI proxy)
   // Deploy appscript-Code.gs following its setup instructions and paste URL here
-  leadEndpoint: 'YOUR_ENDPOINT_HERE',
+  leadEndpoint: 'https://script.google.com/macros/s/AKfycbwlcTlqU5338k6-uamyKXNWcKhkEbyXisKAToqFEKmYl9l9dAS60NnZ2a0NTSOCuXo8/exec',
 
 
   benchmarks: {
