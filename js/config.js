@@ -1,14 +1,35 @@
 var CONFIG = {
   feeRates: {
     junior: 0.0833,
-    mixed: 0.10,
-    senior: 0.125
+    mixed: 0.0833,
+    senior: 0.0833
   },
 
   feeLabels: {
-    junior: '8.33% (0-5 yrs)',
-    mixed: '10% (mixed levels)',
-    senior: '12.5% (10+ yrs)'
+    junior: '0-5 yrs',
+    mixed: 'Mixed levels',
+    senior: '10+ yrs'
+  },
+
+  // TA payroll reduction when Peepal embeds
+  // Higher hires-per-recruiter ratio = more Peepal absorbs = more TA reduction
+  taReduction: {
+    high:   0.75,   // 75% reduction: ratio >= 60 hires/recruiter
+    medium: 0.65,   // 65%: ratio >= 40
+    low:    0.55,   // 55%: ratio >= 25
+    base:   0.50    // 50% minimum
+  },
+
+  // Auto-filled vacancy cost per day (₹) by industry × experience level
+  // Formula base: (avgCTC / 260 working days) × industry multiplier
+  // These are the multipliers applied to daily CTC equivalent
+  vacancyMultipliers: {
+    'BFSI / Fintech':             { junior: 1.8, mixed: 2.2, senior: 2.8 },
+    'Technology':                  { junior: 2.0, mixed: 2.5, senior: 3.0 },
+    'Healthcare / Med Tech':       { junior: 1.6, mixed: 2.0, senior: 2.5 },
+    'Manufacturing / Industrial':  { junior: 1.4, mixed: 1.8, senior: 2.2 },
+    'Professional Services':       { junior: 1.6, mixed: 2.0, senior: 2.5 },
+    'Other':                       { junior: 1.5, mixed: 1.9, senior: 2.4 }
   },
 
   bulkDiscounts: [

@@ -103,10 +103,12 @@ document.addEventListener('DOMContentLoaded', function() {
   {
     valueSection.classList.remove('hidden');
     var points = [];
-    if (r.techAbsorbed > 0) points.push('₹' + Math.round(r.techAbsorbed / 100000) + 'L in recruitment tech costs are absorbed by Peepal under a standard engagement.');
+    if (r.taSavings > 0) points.push('Your TA team reduces by ' + Math.round(r.taReductionPct * 100) + '%, saving ' + fmt(r.taSavings) + '/year. Retained recruiters focus on stakeholder management, offer experience, and internal mobility.');
+    if (r.techAbsorbed > 0) points.push(fmt(r.techAbsorbed) + ' in recruitment tech costs are absorbed by Peepal under a standard engagement.');
     if (r.vacancySavings > 0) points.push('Vacancy cost drops by ' + fmt(r.vacancySavings) + ' from a 35% reduction in time to fill.');
+    if (r.unclosedSavings > 0) points.push(fmt(r.unclosedSavings) + ' saved by closing ' + Math.round(r.unclosedRoles * 0.8) + ' of ' + r.unclosedRoles + ' previously unfilled roles.');
     if (inp.ttf.days > 0) points.push('Time to fill drops from ' + inp.ttf.days + ' to ~' + r.newTTF + ' days. For niche roles, this may vary.');
-    points.push('Your ' + inp.ta.recruiters + ' recruiter' + (inp.ta.recruiters > 1 ? 's' : '') + ' currently close ' + r.recruiterProductivity + ' hires per year each. Peepal handles ~80 hires per recruiter per year for standard roles, freeing your team for stakeholder work, offer experience, and internal mobility.');
+    points.push('Your ' + inp.ta.recruiters + ' recruiter' + (inp.ta.recruiters > 1 ? 's' : '') + ' currently close ' + r.recruiterProductivity + ' hires per year each. Peepal can handle up to ~80 hires per recruiter per year for standard roles if needed.');
     var valueList = document.getElementById('value-points');
     valueList.innerHTML = '';
     for (var i = 0; i < points.length; i++) {
@@ -129,9 +131,17 @@ document.addEventListener('DOMContentLoaded', function() {
   setText('cc-ta-current', fmt(r.currentTA));
   setText('cc-tech-current', fmt(r.currentTech));
   setText('cc-vacancy-current', fmt(r.currentVacancyCost));
-  setText('cc-ta-peepal', fmt(r.currentTA));
+  setText('cc-ta-peepal', fmt(r.retainedTA));
+  setText('cc-ta-reduction-note', Math.round(r.taReductionPct * 100) + '% reduction');
   setText('cc-fee-peepal', fmt(r.netFee));
   setText('cc-vacancy-peepal', fmt(r.peepalVacancyCost));
+  // Unclosed roles rows
+  if (r.unclosedRoles > 0) {
+    setText('cc-unclosed-current', fmt(r.unclosedCost));
+    document.getElementById('cc-unclosed-row').classList.remove('hidden');
+    setText('cc-unclosed-peepal', fmt(r.peepalUnclosedCost));
+    document.getElementById('cc-unclosed-peepal-row').classList.remove('hidden');
+  }
 
   // --- INPUT SUMMARY ---
   setText('inp-company', company);
@@ -140,24 +150,33 @@ document.addEventListener('DOMContentLoaded', function() {
   setText('inp-recruiters', inp.ta.recruiters);
   setText('inp-ta-cost', fmt(inp.ta.annualCost));
   setText('inp-hires', r.totalHires);
+  if (r.unclosedRoles > 0) {
+    setText('inp-unclosed', r.unclosedRoles);
+    document.getElementById('inp-unclosed-row').classList.remove('hidden');
+  }
   setText('inp-avg-ctc', fmt(r.avgCtc));
   // Show experience level without revealing the fee percentage
   var expLabels = { junior: '0-5 years', mixed: 'Mixed levels', senior: '10+ years' };
   setText('inp-exp', expLabels[inp.hiring.expLevel] || '--');
   setText('inp-tech', fmt(inp.tech.annualSpend));
   setText('inp-ttf', inp.ttf.days + ' days');
-  setText('inp-vacancy', r.tracksVacancy ? fmt(inp.vacancy.costPerDay) + '/day' : 'Not tracked');
+  setText('inp-vacancy', r.tracksVacancy ? '₹' + Math.round(inp.vacancy.costPerDay).toLocaleString('en-IN') + '/day' : 'Not tracked');
 
   // --- METHODOLOGY ---
   setText('m-total-hires', r.totalHires);
   // Don't expose fee rates - show experience tier instead
   var tierLabels = { junior: 'Junior (0-5 yrs)', mixed: 'Mixed levels', senior: 'Senior (10+ yrs)' };
   setText('m-fee-rate', tierLabels[inp.hiring.expLevel] || 'Standard');
+  setText('m-ta-reduction', Math.round(r.taReductionPct * 100) + '% (' + fmt(r.taSavings) + ' saved)');
   setText('m-ttf-reduction', Math.round(CONFIG.timeToFillReduction * 100) + '%');
   if (r.bulkDiscount > 0) {
     setText('m-bulk-discount', fmt(r.bulkDiscount) + ' applied');
   } else {
     setText('m-bulk-discount', 'Not applicable (under 100 hires)');
+  }
+  if (r.unclosedRoles > 0) {
+    setText('m-unclosed-rate', '80% closed by Peepal (' + r.unclosedRoles + ' roles)');
+    document.getElementById('m-unclosed-row').classList.remove('hidden');
   }
 
   // --- EMAIL GATE ---

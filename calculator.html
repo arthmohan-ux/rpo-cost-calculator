@@ -88,6 +88,8 @@
       </div>
       <div class="hiring-simple">
         <div class="field"><label for="total-hires-input">Total annual hires</label><input type="number" id="total-hires-input" placeholder="e.g. 100" min="1"></div>
+        <div class="field"><label for="unclosed-roles">Roles that went unclosed last year</label><input type="number" id="unclosed-roles" placeholder="e.g. 15" min="0"></div>
+        <p class="hint" style="margin-top:-4px">Roles you couldn't fill and had to cancel or carry forward.</p>
         <div class="field"><label for="avg-ctc">Average CTC (in Lakhs)</label><div class="input-rupee"><input type="number" id="avg-ctc" placeholder="e.g. 12"></div></div>
       </div>
       <div class="field" id="exp-level-group" style="margin-top:16px">
@@ -142,15 +144,11 @@
       <div class="step-card-header">
         <p class="step-eyebrow">Step 6</p>
         <h2 class="step-title">Vacancy cost</h2>
-        <p class="step-subtitle">Does every vacant role cost your business money while it stays open?</p>
+        <p class="step-subtitle">Every open role has a cost: lost output, overtime, delayed projects. We've estimated yours below based on your industry and CTC.</p>
       </div>
-      <div class="yesno-group">
-        <div class="yesno-card"><input type="radio" name="vacancy_tracks" id="vacancy-yes" value="yes"><label for="vacancy-yes">Yes</label></div>
-        <div class="yesno-card"><input type="radio" name="vacancy_tracks" id="vacancy-no" value="no" checked><label for="vacancy-no">No / unsure</label></div>
-      </div>
-      <div id="vacancy-cost-wrap" class="hidden">
-        <div class="field"><label for="vacancy-cost-day">Cost per vacant role per day (in Rupees)</label><div class="input-rupee"><input type="number" id="vacancy-cost-day" placeholder="e.g. 5000" min="0"></div></div>
-        <p class="hint">Think lost revenue, delayed deliverables, or overtime cost per open role per day.</p>
+      <div id="vacancy-cost-wrap">
+        <div class="field"><label for="vacancy-cost-day">Estimated cost per vacant role per day</label><div class="input-rupee"><input type="number" id="vacancy-cost-day" placeholder="e.g. 5000" min="0"></div></div>
+        <p class="hint" id="vacancy-hint">Based on your industry and average CTC. Adjust if you have a more specific number.</p>
       </div>
       <div class="step-nav">
         <button class="btn-back" type="button">Back</button>

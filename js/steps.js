@@ -101,6 +101,28 @@ function updateProgressBar() {
   }
 }
 
+function autoFillVacancyCost() {
+  var industry = document.getElementById('industry').value || 'Other';
+  var expEl = document.querySelector('input[name="exp_level"]:checked');
+  var expLevel = expEl ? expEl.value : 'mixed';
+  var avgCtc = (parseFloat(document.getElementById('avg-ctc').value) || 12) * 100000;
+  var multipliers = CONFIG.vacancyMultipliers[industry] || CONFIG.vacancyMultipliers['Other'];
+  var multiplier = multipliers[expLevel] || multipliers.mixed;
+  // Daily CTC equivalent × industry multiplier, rounded to nearest 500
+  var dailyCTC = avgCtc / 260;
+  var vacancyCost = Math.round((dailyCTC * multiplier) / 500) * 500;
+  var field = document.getElementById('vacancy-cost-day');
+  // Only auto-fill if user hasn't manually edited it
+  if (!field.dataset.userEdited) {
+    field.value = vacancyCost;
+  }
+  // Update hint with explanation
+  var hint = document.getElementById('vacancy-hint');
+  if (hint) {
+    hint.textContent = 'Based on ' + fmtApprox(avgCtc) + ' CTC in ' + industry + ' (' + multiplier + 'x daily salary). Adjust if needed.';
+  }
+}
+
 function showStep(step) {
   var cards = document.querySelectorAll('.step-card');
   for (var i = 0; i < cards.length; i++) cards[i].classList.remove('active');
@@ -110,6 +132,7 @@ function showStep(step) {
   updateProgressBar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (step === 5) updateTTFBenchmark();
+  if (step === 6) autoFillVacancyCost();
 }
 
 function showTransitionMessage(step, callback) {
@@ -157,13 +180,14 @@ function collectInputs() {
     },
     hiring: {
       totalHires: parseInt(document.getElementById('total-hires-input').value) || 0,
+      unclosedRoles: parseInt(document.getElementById('unclosed-roles').value) || 0,
       avgCtc: (parseFloat(document.getElementById('avg-ctc').value) || 0) * 100000,
       expLevel: document.querySelector('input[name="exp_level"]:checked').value
     },
     tech: { annualSpend: parseLakh('tech-spend') },
     ttf: { days: getTTFDays() },
     vacancy: {
-      tracksIt: document.querySelector('input[name="vacancy_tracks"]:checked').value === 'yes',
+      tracksIt: true,
       costPerDay: parseFloat(document.getElementById('vacancy-cost-day').value) || 0
     }
   };
@@ -191,9 +215,8 @@ document.addEventListener('DOMContentLoaded', function() {
   for (var i = 0; i < ttfRadios.length; i++) ttfRadios[i].addEventListener('change', function() {
     document.getElementById('ttf-custom-wrap').classList.toggle('hidden', this.value !== 'custom');
   });
-  var vacRadios = document.querySelectorAll('input[name="vacancy_tracks"]');
-  for (var i = 0; i < vacRadios.length; i++) vacRadios[i].addEventListener('change', function() {
-    document.getElementById('vacancy-cost-wrap').classList.toggle('hidden', this.value !== 'yes');
-  });
+  // Track if user manually edits the vacancy cost field
+  var vacField = document.getElementById('vacancy-cost-day');
+  if (vacField) vacField.addEventListener('input', function() { this.dataset.userEdited = 'true'; });
   updateProgressBar();
 });
