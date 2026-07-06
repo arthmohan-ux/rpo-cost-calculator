@@ -11,15 +11,6 @@ var CONFIG = {
     senior: '10+ yrs'
   },
 
-  // TA payroll reduction when Peepal embeds
-  // Higher hires-per-recruiter ratio = more Peepal absorbs = more TA reduction
-  taReduction: {
-    high:   0.75,   // 75% reduction: ratio >= 60 hires/recruiter
-    medium: 0.65,   // 65%: ratio >= 40
-    low:    0.55,   // 55%: ratio >= 25
-    base:   0.50    // 50% minimum
-  },
-
   // Auto-filled vacancy cost per day (₹) by industry × experience level
   // Formula base: (avgCTC / 260 working days) × industry multiplier
   // These are the multipliers applied to daily CTC equivalent

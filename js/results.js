@@ -51,19 +51,29 @@ document.addEventListener('DOMContentLoaded', function() {
     heroAmount.style.color = '#F27C22';
     heroSub.innerHTML = 'That is <span style="color:#F27C22">' + pct(r.diffPct) + '</span> of your current hiring spend';
   } else {
-    // Lead with the strongest value metric, never "costs more"
-    var ttfSaved = (inp.ttf.days || 0) - r.newTTF;
-    if (ttfSaved > 0) {
-      heroLabel.textContent = 'Days faster to fill every role';
-      heroAmount.textContent = ttfSaved + ' days';
-      heroAmount.style.color = '#F27C22';
-      heroSub.innerHTML = 'Faster hiring, absorbed tech costs, and <span style="color:#F27C22">' + (r.recruiterProductivity > 0 ? Math.round(80 / r.recruiterProductivity) + 'x' : 'higher') + '</span> recruiter throughput. See the full picture below.';
-    } else {
-      heroLabel.textContent = 'Your hiring cost analysis';
-      heroAmount.textContent = fmt(r.peepalTotal);
-      heroAmount.style.color = '#F27C22';
-      heroSub.innerHTML = 'See how embedded RPO changes your team\'s capacity and cost structure below.';
-    }
+    heroLabel.textContent = 'Your hiring cost analysis';
+    heroAmount.textContent = fmt(r.peepalTotal);
+    heroAmount.style.color = '#F27C22';
+    heroSub.innerHTML = 'Full-capacity RPO for all ' + r.totalHires + ' roles. See the breakdown below.';
+  }
+
+  // --- HERO HIGHLIGHT CARDS ---
+  // Card 1: cost to close unclosed roles
+  if (r.unclosedRoles > 0) {
+    setText('hh-unclosed-fee', fmt(r.unclosedRoleFee));
+    setText('hh-unclosed-sub', r.unclosedRoles + ' roles at ' + fmt(r.avgCtc) + ' avg CTC');
+  } else {
+    setText('hh-unclosed-fee', '--');
+    setText('hh-unclosed-sub', 'No unclosed roles entered');
+    document.getElementById('hero-unclosed-card').style.opacity = '0.4';
+  }
+  // Card 2: total savings when Peepal handles everything
+  if (r.isNetSaving) {
+    setText('hh-total-savings', fmt(r.netDifference));
+    setText('hh-total-sub', 'You save ' + pct(r.diffPct) + ' vs current spend');
+  } else {
+    setText('hh-total-savings', fmt(r.netFee));
+    setText('hh-total-sub', 'For all ' + r.totalHires + ' hires at 8.33% of CTC');
   }
 
   // --- KPIs ---
@@ -103,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
   {
     valueSection.classList.remove('hidden');
     var points = [];
-    if (r.taSavings > 0) points.push('Your TA team reduces by ' + Math.round(r.taReductionPct * 100) + '%, saving ' + fmt(r.taSavings) + '/year. Retained recruiters focus on stakeholder management, offer experience, and internal mobility.');
+    points.push('Peepal takes over your full hiring function, replacing internal TA team, recruitment technology, and agency spend.');
     if (r.techAbsorbed > 0) points.push(fmt(r.techAbsorbed) + ' in recruitment tech costs are absorbed by Peepal under a standard engagement.');
     if (r.vacancySavings > 0) points.push('Vacancy cost drops by ' + fmt(r.vacancySavings) + ' from a 35% reduction in time to fill.');
     if (r.unclosedSavings > 0) points.push(fmt(r.unclosedSavings) + ' saved by closing ' + Math.round(r.unclosedRoles * 0.8) + ' of ' + r.unclosedRoles + ' previously unfilled roles.');
@@ -131,8 +141,6 @@ document.addEventListener('DOMContentLoaded', function() {
   setText('cc-ta-current', fmt(r.currentTA));
   setText('cc-tech-current', fmt(r.currentTech));
   setText('cc-vacancy-current', fmt(r.currentVacancyCost));
-  setText('cc-ta-peepal', fmt(r.retainedTA));
-  setText('cc-ta-reduction-note', Math.round(r.taReductionPct * 100) + '% reduction');
   setText('cc-fee-peepal', fmt(r.netFee));
   setText('cc-vacancy-peepal', fmt(r.peepalVacancyCost));
   // Unclosed roles rows
@@ -167,7 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Don't expose fee rates - show experience tier instead
   var tierLabels = { junior: 'Junior (0-5 yrs)', mixed: 'Mixed levels', senior: 'Senior (10+ yrs)' };
   setText('m-fee-rate', tierLabels[inp.hiring.expLevel] || 'Standard');
-  setText('m-ta-reduction', Math.round(r.taReductionPct * 100) + '% (' + fmt(r.taSavings) + ' saved)');
   setText('m-ttf-reduction', Math.round(CONFIG.timeToFillReduction * 100) + '%');
   if (r.bulkDiscount > 0) {
     setText('m-bulk-discount', fmt(r.bulkDiscount) + ' applied');

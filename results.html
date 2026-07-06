@@ -26,6 +26,19 @@
     <p class="savings-label" id="hero-label">Cost comparison</p>
     <div class="savings-amount" id="hero-savings">--</div>
     <p class="savings-pct" id="hero-sub">--</p>
+    <!-- Two highlight cards -->
+    <div class="hero-highlights" id="hero-highlights">
+      <div class="hero-highlight-card" id="hero-unclosed-card">
+        <p class="hh-label">Close your unclosed roles</p>
+        <p class="hh-amount" id="hh-unclosed-fee">--</p>
+        <p class="hh-sub" id="hh-unclosed-sub">--</p>
+      </div>
+      <div class="hero-highlight-card">
+        <p class="hh-label">Peepal handles all hiring</p>
+        <p class="hh-amount" id="hh-total-savings">--</p>
+        <p class="hh-sub" id="hh-total-sub">--</p>
+      </div>
+    </div>
   </div>
 
   <!-- Email gate overlay -->
@@ -117,10 +130,7 @@
         <div class="cost-col peepal g-card">
           <p class="cost-col-label">With Peepal</p>
           <p class="cost-col-total" id="cc-peepal-total">--</p>
-          <div class="cost-line"><span>TA payroll</span><span class="clv" id="cc-ta-peepal">--</span></div>
-          <div class="cost-line"><span class="clv" id="cc-ta-reduction-note" style="font-size:10px;color:var(--orange-dark);font-weight:400"></span></div>
           <div class="cost-line"><span>Peepal fee</span><span class="clv" id="cc-fee-peepal">--</span></div>
-          <div class="cost-line"><span>Rec. tech</span><span class="clv">₹0</span></div>
           <div class="cost-line"><span>Vacancy cost</span><span class="clv" id="cc-vacancy-peepal">--</span></div>
           <div class="cost-line hidden" id="cc-unclosed-peepal-row"><span>Unclosed roles</span><span class="clv" id="cc-unclosed-peepal">--</span></div>
         </div>
@@ -161,11 +171,10 @@
       <div class="method-card g-card">
         <div class="assume-row"><span class="a-l">Total hires modelled</span><span class="a-v" id="m-total-hires">--</span></div>
         <div class="assume-row"><span class="a-l">Experience tier</span><span class="a-v" id="m-fee-rate">--</span></div>
-        <div class="assume-row"><span class="a-l">TA team reduction</span><span class="a-v" id="m-ta-reduction">--</span></div>
         <div class="assume-row"><span class="a-l">Time-to-fill reduction</span><span class="a-v" id="m-ttf-reduction">--</span></div>
         <div class="assume-row"><span class="a-l">Bulk discount</span><span class="a-v" id="m-bulk-discount">--</span></div>
         <div class="assume-row hidden" id="m-unclosed-row"><span class="a-l">Unclosed role closure rate</span><span class="a-v" id="m-unclosed-rate">--</span></div>
-        <p class="method-note">This is an estimate based on your inputs and Peepal's standard engagement model. Actual fees and TA restructuring are confirmed at proposal stage. TA payroll reduction reflects Peepal embedding into the hiring function, with retained recruiters focusing on stakeholder management and internal mobility. Vacancy cost is calculated as total hires &times; average time-to-fill &times; daily cost per open role.</p>
+        <p class="method-note">This is an estimate based on your inputs and Peepal's standard engagement model. Actual fees are confirmed at proposal stage. Peepal takes over the full hiring function, replacing internal TA, recruitment technology, and agency spend. Vacancy cost is calculated as total hires &times; average time-to-fill &times; daily cost per open role.</p>
       </div>
     </section>
 

@@ -10,17 +10,8 @@ function calculate(input) {
   var avgCtc = hiring.avgCtc || 0;
   var feeRate = CONFIG.feeRates[hiring.expLevel] || CONFIG.feeRates.mixed;
 
-  // --- TA REDUCTION ---
-  // Peepal embeds into the hiring function, reducing internal TA headcount.
-  // Reduction % scales with how much volume Peepal absorbs relative to team size.
-  var ratio = ta.recruiters > 0 ? totalHires / ta.recruiters : 0;
-  var taReductionPct;
-  if (ratio >= 60) taReductionPct = CONFIG.taReduction.high;       // 75%
-  else if (ratio >= 40) taReductionPct = CONFIG.taReduction.medium; // 65%
-  else if (ratio >= 25) taReductionPct = CONFIG.taReduction.low;    // 55%
-  else taReductionPct = CONFIG.taReduction.base;                    // 50%
-
   // --- CURRENT STATE ---
+  // Everything the company spends today on hiring
   var currentTA = ta.annualCost || 0;
   var currentTech = tech.annualSpend || 0;
   var tracksVacancy = vacancy.costPerDay > 0;
@@ -38,11 +29,8 @@ function calculate(input) {
   var currentCPH = totalHires > 0 ? currentTotal / totalHires : 0;
 
   // --- WITH PEEPAL ---
-  // TA payroll reduces
-  var retainedTA = Math.round(currentTA * (1 - taReductionPct));
-  var taSavings = currentTA - retainedTA;
-
-  // Tech goes to zero (absorbed by Peepal)
+  // Peepal takes over the full hiring function.
+  // No TA payroll, no tech spend on the Peepal side.
   // Peepal fee = hires x CTC x rate (flat 8.33%)
   var grossFee = totalHires * avgCtc * feeRate;
 
@@ -64,8 +52,8 @@ function calculate(input) {
   var unclosedWithPeepal = Math.round(unclosedRoles * 0.2);
   var peepalUnclosedCost = tracksVacancy && unclosedWithPeepal > 0 ? unclosedWithPeepal * vacancy.costPerDay * unclosedDays : 0;
 
-  // Peepal total = reduced TA + net fee + no tech + reduced vacancy + fewer unclosed
-  var peepalTotal = retainedTA + netFee + peepalVacancyCost + peepalUnclosedCost;
+  // Peepal total = fee + reduced vacancy + residual unclosed cost (no TA, no tech)
+  var peepalTotal = netFee + peepalVacancyCost + peepalUnclosedCost;
   var peepalCPH = totalHires > 0 ? peepalTotal / totalHires : 0;
 
   // --- DIFFERENCE ---
@@ -76,6 +64,9 @@ function calculate(input) {
   // Component savings (for display)
   var vacancySavings = currentVacancyCost - peepalVacancyCost;
   var unclosedSavings = unclosedCost - peepalUnclosedCost;
+
+  // Cost to close just the unclosed roles via Peepal
+  var unclosedRoleFee = unclosedRoles > 0 ? Math.round(unclosedRoles * avgCtc * feeRate) : 0;
 
   // Capacity
   var recruiterProductivity = ta.recruiters > 0 ? Math.round(totalHires / ta.recruiters) : 0;
@@ -96,9 +87,6 @@ function calculate(input) {
     currentCPH: currentCPH,
 
     // Peepal
-    retainedTA: retainedTA,
-    taSavings: taSavings,
-    taReductionPct: taReductionPct,
     grossFee: grossFee,
     bulkDiscount: bulkDiscount,
     netFee: netFee,
@@ -116,6 +104,7 @@ function calculate(input) {
     techAbsorbed: currentTech,
     vacancySavings: vacancySavings,
     unclosedSavings: unclosedSavings,
+    unclosedRoleFee: unclosedRoleFee,
     newTTF: newTTF,
     tracksVacancy: tracksVacancy,
     recruiterProductivity: recruiterProductivity
