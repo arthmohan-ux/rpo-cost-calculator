@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var points = [];
     points.push('Peepal takes over your full hiring function, replacing internal TA team, recruitment technology, and agency spend.');
     if (r.techAbsorbed > 0) points.push(fmt(r.techAbsorbed) + ' in recruitment tech costs are absorbed by Peepal under a standard engagement.');
-    if (r.vacancySavings > 0) points.push('Vacancy cost drops by ' + fmt(r.vacancySavings) + ' from a 35% reduction in time to fill.');
+    if (r.vacancySavings > 0) points.push('Vacancy cost drops by ' + fmt(r.vacancySavings) + ' with a 35% reduction in time to fill.');
     if (r.unclosedSavings > 0) points.push('Peepal closes your ' + r.unclosedRoles + ' unclosed roles, saving ' + fmt(r.unclosedSavings) + ' in vacancy costs.');
     if (inp.ttf.days > 0) points.push('Time to fill drops from ' + inp.ttf.days + ' to ~' + r.newTTF + ' days. For niche roles, this may vary.');
     points.push('Your ' + inp.ta.recruiters + ' recruiter' + (inp.ta.recruiters > 1 ? 's' : '') + ' currently close ' + r.recruiterProductivity + ' hires per year each. Peepal can handle up to ~80 hires per recruiter per year for standard roles if needed.');
