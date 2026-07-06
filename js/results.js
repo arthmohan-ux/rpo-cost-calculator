@@ -58,22 +58,25 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- HERO HIGHLIGHT CARDS ---
-  // Card 1: cost to close unclosed roles
-  if (r.unclosedRoles > 0) {
+  // Card 1: savings from closing unclosed roles
+  if (r.unclosedRoles > 0 && r.unclosedSavings > 0) {
+    setText('hh-unclosed-fee', fmt(r.unclosedSavings));
+    setText('hh-unclosed-sub', 'You save ' + fmt(r.unclosedSavings) + ' on ' + r.unclosedRoles + ' roles');
+  } else if (r.unclosedRoles > 0) {
     setText('hh-unclosed-fee', fmt(r.unclosedRoleFee));
-    setText('hh-unclosed-sub', r.unclosedRoles + ' roles at ' + fmt(r.avgCtc) + ' avg CTC');
+    setText('hh-unclosed-sub', r.unclosedRoles + ' roles closed for ' + fmt(r.unclosedRoleFee));
   } else {
     setText('hh-unclosed-fee', '--');
     setText('hh-unclosed-sub', 'No unclosed roles entered');
     document.getElementById('hero-unclosed-card').style.opacity = '0.4';
   }
-  // Card 2: total savings when Peepal handles everything
+  // Card 2: total savings when Peepal handles all hiring
   if (r.isNetSaving) {
     setText('hh-total-savings', fmt(r.netDifference));
-    setText('hh-total-sub', 'You save ' + pct(r.diffPct) + ' vs current spend');
+    setText('hh-total-sub', 'You save ' + pct(r.diffPct) + ' on your total hiring spend');
   } else {
-    setText('hh-total-savings', fmt(r.netFee));
-    setText('hh-total-sub', 'For all ' + r.totalHires + ' hires at 8.33% of CTC');
+    setText('hh-total-savings', fmt(r.peepalTotal));
+    setText('hh-total-sub', 'All ' + r.totalHires + ' hires handled by Peepal');
   }
 
   // --- KPIs ---
@@ -116,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
     points.push('Peepal takes over your full hiring function, replacing internal TA team, recruitment technology, and agency spend.');
     if (r.techAbsorbed > 0) points.push(fmt(r.techAbsorbed) + ' in recruitment tech costs are absorbed by Peepal under a standard engagement.');
     if (r.vacancySavings > 0) points.push('Vacancy cost drops by ' + fmt(r.vacancySavings) + ' from a 35% reduction in time to fill.');
-    if (r.unclosedSavings > 0) points.push(fmt(r.unclosedSavings) + ' saved by closing ' + Math.round(r.unclosedRoles * 0.8) + ' of ' + r.unclosedRoles + ' previously unfilled roles.');
+    if (r.unclosedSavings > 0) points.push('Peepal closes your ' + r.unclosedRoles + ' unclosed roles, saving ' + fmt(r.unclosedSavings) + ' in vacancy costs.');
     if (inp.ttf.days > 0) points.push('Time to fill drops from ' + inp.ttf.days + ' to ~' + r.newTTF + ' days. For niche roles, this may vary.');
     points.push('Your ' + inp.ta.recruiters + ' recruiter' + (inp.ta.recruiters > 1 ? 's' : '') + ' currently close ' + r.recruiterProductivity + ' hires per year each. Peepal can handle up to ~80 hires per recruiter per year for standard roles if needed.');
     var valueList = document.getElementById('value-points');
