@@ -194,6 +194,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var contentEl = document.getElementById('results-content');
   if (gateEl && contentEl) {
     contentEl.classList.add('blurred');
+
+    // Unlock button
     document.getElementById('btn-gate-unlock').addEventListener('click', function() {
       var email = document.getElementById('gate-email').value.trim();
       if (!email || email.indexOf('@') === -1) {
@@ -202,27 +204,30 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       unlockResults(email);
     });
-    document.getElementById('btn-gate-skip').addEventListener('click', function() {
+
+    // Skip button -> show confirmation
+    var skipBtn = document.getElementById('btn-gate-skip');
+    var confirmEl = document.getElementById('gate-confirm');
+    skipBtn.addEventListener('click', function() {
+      skipBtn.style.display = 'none';
+      confirmEl.classList.remove('hidden');
+    });
+    // Confirm skip
+    document.getElementById('btn-confirm-skip').addEventListener('click', function() {
       unlockResults(null);
+    });
+    // Go back to email input
+    document.getElementById('btn-confirm-back').addEventListener('click', function() {
+      confirmEl.classList.add('hidden');
+      skipBtn.style.display = '';
+      document.getElementById('gate-email').focus();
     });
   }
 
   function unlockResults(email) {
     if (email) {
-      var inp = JSON.parse(localStorage.getItem('peepal_calc_inputs') || '{}');
-      var gateData = {
-        email: email,
-        company: (inp.company && inp.company.name) || '',
-        timestamp: new Date().toISOString(),
-        source: 'rpo-calculator-gate'
-      };
-      var LEAD_ENDPOINT = 'YOUR_ENDPOINT_HERE';
-      if (LEAD_ENDPOINT !== 'YOUR_ENDPOINT_HERE') {
-        fetch(LEAD_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gateData), mode: 'no-cors' }).catch(function() {});
-      }
-      var leads = JSON.parse(localStorage.getItem('peepal_leads') || '[]');
-      leads.push(gateData);
-      localStorage.setItem('peepal_leads', JSON.stringify(leads));
+      var payload = buildLeadPayload(email, '', '', 'email-gate');
+      sendLead(payload);
     }
     gateEl.classList.add('hidden');
     contentEl.classList.remove('blurred');
@@ -234,53 +239,84 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btn-modal-skip').addEventListener('click', function() { hideLeadModal(); window.print(); });
 });
 
+// --- LEAD COLLECTION HELPERS ---
+
+function buildLeadPayload(email, name, phone, source) {
+  var inp = JSON.parse(localStorage.getItem('peepal_calc_inputs') || '{}');
+  var res = JSON.parse(localStorage.getItem('peepal_calc_results') || '{}');
+  return {
+    timestamp: new Date().toISOString(),
+    email: email || '',
+    name: name || '',
+    phone: phone || '',
+    company: (inp.company && inp.company.name) || '',
+    industry: (inp.company && inp.company.industry) || '',
+    companySize: (inp.company && inp.company.size) || '',
+    source: source || 'rpo-calculator',
+    // Inputs
+    recruiters: inp.ta ? inp.ta.recruiters : '',
+    taCost: inp.ta ? inp.ta.annualCost : '',
+    annualHires: res.totalHires || '',
+    unclosedRoles: res.unclosedRoles || 0,
+    avgCtc: res.avgCtc || '',
+    expLevel: res.expLevel || '',
+    techSpend: inp.tech ? inp.tech.annualSpend : '',
+    ttfDays: inp.ttf ? inp.ttf.days : '',
+    vacancyCostPerDay: inp.vacancy ? inp.vacancy.costPerDay : '',
+    // Current state
+    currentTotal: res.currentTotal || '',
+    currentTA: res.currentTA || '',
+    currentTech: res.currentTech || '',
+    currentVacancy: res.currentVacancyCost || '',
+    currentUnclosed: res.unclosedCost || 0,
+    cphCurrent: res.currentCPH || '',
+    // Peepal
+    peepalTotal: res.peepalTotal || '',
+    peepalFee: res.netFee || '',
+    bulkDiscount: res.bulkDiscount || 0,
+    peepalVacancy: res.peepalVacancyCost || '',
+    peepalUnclosed: res.peepalUnclosedCost || 0,
+    cphPeepal: res.peepalCPH || '',
+    newTTF: res.newTTF || '',
+    // Result
+    netSavings: res.netDifference || '',
+    savingsPct: res.diffPct ? Math.round(res.diffPct * 100) + '%' : '',
+    peepalWins: res.isNetSaving ? 'Yes' : 'No',
+    vacancySavings: res.vacancySavings || '',
+    unclosedSavings: res.unclosedSavings || 0,
+    techAbsorbed: res.techAbsorbed || ''
+  };
+}
+
+function sendLead(payload) {
+  // Send to Google Sheet
+  var endpoint = CONFIG.leadEndpoint;
+  if (endpoint && endpoint !== 'YOUR_ENDPOINT_HERE') {
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).catch(function() {});
+  }
+  // Always store locally as backup
+  var leads = JSON.parse(localStorage.getItem('peepal_leads') || '[]');
+  leads.push(payload);
+  localStorage.setItem('peepal_leads', JSON.stringify(leads));
+}
+
 function showLeadModal() { document.getElementById('lead-modal').classList.add('visible'); document.getElementById('modal-name').focus(); }
 function hideLeadModal() { document.getElementById('lead-modal').classList.remove('visible'); }
 function submitLead() {
   var name = document.getElementById('modal-name').value.trim();
   var email = document.getElementById('modal-email').value.trim();
   var phone = document.getElementById('modal-phone').value.trim();
-  var inp = JSON.parse(localStorage.getItem('peepal_calc_inputs') || '{}');
-  var res = JSON.parse(localStorage.getItem('peepal_calc_results') || '{}');
-  var company = (inp.company && inp.company.name) || '';
   if (!name || !email) {
     document.getElementById('modal-name').style.borderColor = name ? '' : 'var(--error)';
     document.getElementById('modal-email').style.borderColor = email ? '' : 'var(--error)';
     return;
   }
-  var leadData = {
-    name: name,
-    email: email,
-    phone: phone,
-    company: company,
-    industry: (inp.company && inp.company.industry) || '',
-    companySize: (inp.company && inp.company.size) || '',
-    annualHires: res.totalHires || '',
-    avgCtc: res.avgCtc ? Math.round(res.avgCtc / 100000) + 'L' : '',
-    currentTotal: res.currentTotal ? fmt(res.currentTotal) : '',
-    peepalTotal: res.peepalTotal ? fmt(res.peepalTotal) : '',
-    isNetSaving: res.isNetSaving ? 'Yes' : 'No',
-    timestamp: new Date().toISOString(),
-    source: 'rpo-calculator'
-  };
-
-  // Send to configured endpoint (replace YOUR_ENDPOINT_HERE with your
-  // Google Apps Script web app URL or Formspree endpoint)
-  var LEAD_ENDPOINT = 'YOUR_ENDPOINT_HERE';
-  if (LEAD_ENDPOINT !== 'YOUR_ENDPOINT_HERE') {
-    fetch(LEAD_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(leadData),
-      mode: 'no-cors'
-    }).catch(function() {});
-  }
-
-  // Always store locally as backup
-  var leads = JSON.parse(localStorage.getItem('peepal_leads') || '[]');
-  leads.push(leadData);
-  localStorage.setItem('peepal_leads', JSON.stringify(leads));
-
+  var payload = buildLeadPayload(email, name, phone, 'print-report');
+  sendLead(payload);
   hideLeadModal();
   window.print();
 }

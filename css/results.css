@@ -174,6 +174,24 @@
 }
 .email-gate-skip:hover { color: var(--grey-700); }
 
+/* Skip confirmation */
+.gate-confirm { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.06); }
+.gate-confirm.hidden { display: none; }
+.gate-confirm-text { font-size: 13px; color: var(--grey-700); margin-bottom: 12px; line-height: 1.5; }
+.gate-confirm-btns { display: flex; gap: 8px; justify-content: center; }
+.gate-confirm-yes {
+  height: 36px; padding: 0 16px; border-radius: 7px; font-size: 13px; font-weight: 500;
+  background: none; border: 1px solid rgba(0,0,0,0.12); color: var(--grey-500);
+  cursor: pointer; font-family: var(--font); transition: all 150ms;
+}
+.gate-confirm-yes:hover { border-color: var(--grey-500); color: var(--grey-700); }
+.gate-confirm-no {
+  height: 36px; padding: 0 16px; border-radius: 7px; font-size: 13px; font-weight: 600;
+  background: var(--orange); border: none; color: var(--white);
+  cursor: pointer; font-family: var(--font); transition: background 150ms;
+}
+.gate-confirm-no:hover { background: var(--orange-dark); }
+
 .results-content.blurred { filter: blur(6px); pointer-events: none; user-select: none; }
 
 @media print {
