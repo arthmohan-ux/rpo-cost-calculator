@@ -128,6 +128,40 @@
 .modal-skip { display: block; text-align: center; font-size: 13px; color: var(--grey-500); margin-top: 12px; cursor: pointer; background: none; border: none; width: 100%; font-family: var(--font); }
 .modal-skip:hover { color: var(--grey-700); }
 
+/* Email gate */
+.email-gate {
+  position: relative; z-index: 50; margin: -24px auto 0; max-width: 560px; padding: 0 16px;
+}
+.email-gate.hidden { display: none; }
+.email-gate-card {
+  background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border); border-radius: var(--radius);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 28px 24px; text-align: center; margin-top: 24px;
+}
+.email-gate-title { font-size: 18px; font-weight: 700; color: var(--black); margin-bottom: 6px; letter-spacing: -0.3px; }
+.email-gate-sub { font-size: 13px; color: var(--grey-500); margin-bottom: 16px; }
+.email-gate-field { display: flex; gap: 8px; }
+.email-gate-field input {
+  flex: 1; height: 46px; border: 1px solid var(--input-border); border-radius: 9px;
+  padding: 0 13px; font-size: 14px; color: var(--black); background: rgba(255,255,255,0.8);
+  font-family: var(--font); transition: border-color 150ms, box-shadow 150ms;
+}
+.email-gate-field input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(242,124,34,0.15); outline: none; }
+.email-gate-field button {
+  height: 46px; padding: 0 18px; border-radius: 9px; font-size: 14px; font-weight: 600;
+  background: var(--orange); color: var(--white); border: none; cursor: pointer;
+  font-family: var(--font); white-space: nowrap; transition: background 150ms;
+}
+.email-gate-field button:hover { background: var(--orange-dark); }
+.email-gate-skip {
+  display: block; margin: 12px auto 0; font-size: 12px; color: var(--grey-500);
+  background: none; border: none; cursor: pointer; font-family: var(--font);
+}
+.email-gate-skip:hover { color: var(--grey-700); }
+
+.results-content.blurred { filter: blur(6px); pointer-events: none; user-select: none; }
+
 @media print {
   .results-topbar, .btn-print, .modal-backdrop, .cta-card, .recalc-link { display: none !important; }
   .results-hero { background: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }

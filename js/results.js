@@ -51,10 +51,19 @@ document.addEventListener('DOMContentLoaded', function() {
     heroAmount.style.color = '#F27C22';
     heroSub.innerHTML = 'That is <span style="color:#F27C22">' + pct(r.diffPct) + '</span> of your current hiring spend';
   } else {
-    heroLabel.textContent = 'Annual cost comparison';
-    heroAmount.textContent = fmt(Math.abs(r.netDifference));
-    heroAmount.style.color = '#ffffff';
-    heroSub.innerHTML = 'Peepal costs <span style="color:#F27C22">' + fmt(Math.abs(r.netDifference)) + ' more</span> per year. Here is what changes.';
+    // Lead with the strongest value metric, never "costs more"
+    var ttfSaved = (inp.ttf.days || 0) - r.newTTF;
+    if (ttfSaved > 0) {
+      heroLabel.textContent = 'Days faster to fill every role';
+      heroAmount.textContent = ttfSaved + ' days';
+      heroAmount.style.color = '#F27C22';
+      heroSub.innerHTML = 'Faster hiring, absorbed tech costs, and <span style="color:#F27C22">' + (r.recruiterProductivity > 0 ? Math.round(80 / r.recruiterProductivity) + 'x' : 'higher') + '</span> recruiter throughput. See the full picture below.';
+    } else {
+      heroLabel.textContent = 'Your hiring cost analysis';
+      heroAmount.textContent = fmt(r.peepalTotal);
+      heroAmount.style.color = '#F27C22';
+      heroSub.innerHTML = 'See how embedded RPO changes your team\'s capacity and cost structure below.';
+    }
   }
 
   // --- KPIs ---
@@ -71,11 +80,15 @@ document.addEventListener('DOMContentLoaded', function() {
     setText('kpi-savings-pct-label', 'of current spend');
     setText('kpi-savings-pct', pct(r.diffPct));
   } else {
-    setText('kpi-savings-label', 'ADDITIONAL INVESTMENT');
-    setText('kpi-savings-abs', fmt(Math.abs(r.netDifference)));
-    document.getElementById('kpi-savings-abs').style.color = 'var(--black)';
-    setText('kpi-savings-pct-label', 'above current spend');
-    setText('kpi-savings-pct', pct(r.diffPct));
+    // Reframe: show what's included for the investment, not just the delta
+    setText('kpi-savings-label', 'INCLUDES');
+    var includes = [];
+    if (r.techAbsorbed > 0) includes.push(fmt(r.techAbsorbed) + ' tech absorbed');
+    if (r.vacancySavings > 0) includes.push(fmt(r.vacancySavings) + ' vacancy saved');
+    includes.push('dedicated sourcing team');
+    setText('kpi-savings-abs', includes[0] || 'Full sourcing stack');
+    setText('kpi-savings-pct-label', includes.length > 1 ? '+ ' + (includes.length - 1) + ' more benefits' : 'included in engagement');
+    setText('kpi-savings-pct', '');
   }
 
   // TTF
@@ -85,9 +98,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('kpi-ttf-card').classList.remove('hidden');
   }
 
-  // --- VALUE STORY (shows when Peepal costs more) ---
+  // --- VALUE STORY (always show - valuable for BD in both cases) ---
   var valueSection = document.getElementById('value-story-section');
-  if (!r.isNetSaving) {
+  {
     valueSection.classList.remove('hidden');
     var points = [];
     if (r.techAbsorbed > 0) points.push('₹' + Math.round(r.techAbsorbed / 100000) + 'L in recruitment tech costs are absorbed by Peepal under a standard engagement.');
@@ -128,19 +141,62 @@ document.addEventListener('DOMContentLoaded', function() {
   setText('inp-ta-cost', fmt(inp.ta.annualCost));
   setText('inp-hires', r.totalHires);
   setText('inp-avg-ctc', fmt(r.avgCtc));
-  setText('inp-exp', CONFIG.feeLabels[inp.hiring.expLevel] || '--');
+  // Show experience level without revealing the fee percentage
+  var expLabels = { junior: '0-5 years', mixed: 'Mixed levels', senior: '10+ years' };
+  setText('inp-exp', expLabels[inp.hiring.expLevel] || '--');
   setText('inp-tech', fmt(inp.tech.annualSpend));
   setText('inp-ttf', inp.ttf.days + ' days');
   setText('inp-vacancy', r.tracksVacancy ? fmt(inp.vacancy.costPerDay) + '/day' : 'Not tracked');
 
   // --- METHODOLOGY ---
   setText('m-total-hires', r.totalHires);
-  setText('m-fee-rate', CONFIG.feeLabels[inp.hiring.expLevel] || '10%');
+  // Don't expose fee rates - show experience tier instead
+  var tierLabels = { junior: 'Junior (0-5 yrs)', mixed: 'Mixed levels', senior: 'Senior (10+ yrs)' };
+  setText('m-fee-rate', tierLabels[inp.hiring.expLevel] || 'Standard');
   setText('m-ttf-reduction', Math.round(CONFIG.timeToFillReduction * 100) + '%');
   if (r.bulkDiscount > 0) {
     setText('m-bulk-discount', fmt(r.bulkDiscount) + ' applied');
   } else {
     setText('m-bulk-discount', 'Not applicable (under 100 hires)');
+  }
+
+  // --- EMAIL GATE ---
+  var gateEl = document.getElementById('email-gate');
+  var contentEl = document.getElementById('results-content');
+  if (gateEl && contentEl) {
+    contentEl.classList.add('blurred');
+    document.getElementById('btn-gate-unlock').addEventListener('click', function() {
+      var email = document.getElementById('gate-email').value.trim();
+      if (!email || email.indexOf('@') === -1) {
+        document.getElementById('gate-email').style.borderColor = 'var(--error, #e24b4a)';
+        return;
+      }
+      unlockResults(email);
+    });
+    document.getElementById('btn-gate-skip').addEventListener('click', function() {
+      unlockResults(null);
+    });
+  }
+
+  function unlockResults(email) {
+    if (email) {
+      var inp = JSON.parse(localStorage.getItem('peepal_calc_inputs') || '{}');
+      var gateData = {
+        email: email,
+        company: (inp.company && inp.company.name) || '',
+        timestamp: new Date().toISOString(),
+        source: 'rpo-calculator-gate'
+      };
+      var LEAD_ENDPOINT = 'YOUR_ENDPOINT_HERE';
+      if (LEAD_ENDPOINT !== 'YOUR_ENDPOINT_HERE') {
+        fetch(LEAD_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gateData), mode: 'no-cors' }).catch(function() {});
+      }
+      var leads = JSON.parse(localStorage.getItem('peepal_leads') || '[]');
+      leads.push(gateData);
+      localStorage.setItem('peepal_leads', JSON.stringify(leads));
+    }
+    gateEl.classList.add('hidden');
+    contentEl.classList.remove('blurred');
   }
 
   // --- PRINT ---
@@ -155,13 +211,47 @@ function submitLead() {
   var name = document.getElementById('modal-name').value.trim();
   var email = document.getElementById('modal-email').value.trim();
   var phone = document.getElementById('modal-phone').value.trim();
-  var company = JSON.parse(localStorage.getItem('peepal_calc_inputs')).company.name || '';
+  var inp = JSON.parse(localStorage.getItem('peepal_calc_inputs') || '{}');
+  var res = JSON.parse(localStorage.getItem('peepal_calc_results') || '{}');
+  var company = (inp.company && inp.company.name) || '';
   if (!name || !email) {
     document.getElementById('modal-name').style.borderColor = name ? '' : 'var(--error)';
     document.getElementById('modal-email').style.borderColor = email ? '' : 'var(--error)';
     return;
   }
-  console.log('Lead captured:', { name: name, email: email, phone: phone, company: company, timestamp: new Date().toISOString() });
+  var leadData = {
+    name: name,
+    email: email,
+    phone: phone,
+    company: company,
+    industry: (inp.company && inp.company.industry) || '',
+    companySize: (inp.company && inp.company.size) || '',
+    annualHires: res.totalHires || '',
+    avgCtc: res.avgCtc ? Math.round(res.avgCtc / 100000) + 'L' : '',
+    currentTotal: res.currentTotal ? fmt(res.currentTotal) : '',
+    peepalTotal: res.peepalTotal ? fmt(res.peepalTotal) : '',
+    isNetSaving: res.isNetSaving ? 'Yes' : 'No',
+    timestamp: new Date().toISOString(),
+    source: 'rpo-calculator'
+  };
+
+  // Send to configured endpoint (replace YOUR_ENDPOINT_HERE with your
+  // Google Apps Script web app URL or Formspree endpoint)
+  var LEAD_ENDPOINT = 'YOUR_ENDPOINT_HERE';
+  if (LEAD_ENDPOINT !== 'YOUR_ENDPOINT_HERE') {
+    fetch(LEAD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(leadData),
+      mode: 'no-cors'
+    }).catch(function() {});
+  }
+
+  // Always store locally as backup
+  var leads = JSON.parse(localStorage.getItem('peepal_leads') || '[]');
+  leads.push(leadData);
+  localStorage.setItem('peepal_leads', JSON.stringify(leads));
+
   hideLeadModal();
   window.print();
 }

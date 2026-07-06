@@ -13,6 +13,12 @@ function calculate(input) {
   var currentTA = ta.annualCost || 0;
   var currentTech = tech.annualSpend || 0;
   var tracksVacancy = vacancy.tracksIt && vacancy.costPerDay > 0;
+  // Vacancy cost: each hire has an open period of TTF days.
+  // Total vacancy-days across the year = hires x TTF.
+  // But roles are staggered over 12 months, not all open simultaneously.
+  // We model total vacancy-days directly: hires x TTF x cost/day.
+  // This is the aggregate cost, which is already correct as a yearly total
+  // since each role independently incurs its own vacancy period.
   var currentVacancyCost = tracksVacancy ? (ttf.days || 0) * (vacancy.costPerDay || 0) * totalHires : 0;
   var currentTotal = currentTA + currentTech + currentVacancyCost;
   var currentCPH = totalHires > 0 ? currentTotal / totalHires : 0;

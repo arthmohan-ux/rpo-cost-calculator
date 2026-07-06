@@ -3,10 +3,14 @@ var currentStep = 1;
 var completedSteps = {};
 
 var TRANSITION_MESSAGES = {
+  1: function() {
+    return 'Got it. Setting up your profile...';
+  },
   2: function() {
     var bench = getBenchmark();
-    var total = parseInt(document.getElementById('total-hires-input').value) || 0;
-    if (bench && total > 0) return 'Companies your size in ' + getIndustry() + ' typically spend ' + fmtApprox(bench.cph * total) + ' on internal TA annually.';
+    var recruiters = parseInt(document.getElementById('recruiters').value) || 0;
+    var taCost = parseFloat(document.getElementById('ta-cost').value) || 0;
+    if (recruiters > 0 && taCost > 0) return 'Team of ' + recruiters + ' at ' + fmtApprox(taCost * 100000) + '/year logged. Let\'s look at your hiring volume.';
     return 'Got it. Calculating your current hiring cost...';
   },
   3: function() {

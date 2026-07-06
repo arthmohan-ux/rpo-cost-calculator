@@ -73,8 +73,8 @@
         <h2 class="step-title">Internal TA team</h2>
         <p class="step-subtitle">Your current in-house recruitment function.</p>
       </div>
-      <div class="field"><label for="recruiters">Number of recruiters</label><input type="number" id="recruiters" placeholder="5" min="1"></div>
-      <div class="field"><label for="ta-cost">Annual TA team cost (in Lakhs)</label><div class="input-rupee"><input type="number" id="ta-cost" placeholder="50"></div></div>
+      <div class="field"><label for="recruiters">Number of recruiters</label><input type="number" id="recruiters" placeholder="e.g. 5" min="1"></div>
+      <div class="field"><label for="ta-cost">Annual TA team cost (in Lakhs)</label><div class="input-rupee"><input type="number" id="ta-cost" placeholder="e.g. 50"></div></div>
       <p class="hint">Include salaries, bonuses, PF, gratuity, and all employer contributions. Enter in lakhs, e.g. 50 for fifty lakhs.</p>
       <div class="step-nav"><button class="btn-back" type="button">Back</button><button class="btn-next" type="button">Continue</button></div>
     </section>
@@ -87,8 +87,8 @@
         <p class="step-subtitle">Total roles, average package, and typical experience level.</p>
       </div>
       <div class="hiring-simple">
-        <div class="field"><label for="total-hires-input">Total annual hires</label><input type="number" id="total-hires-input" placeholder="100" min="1"></div>
-        <div class="field"><label for="avg-ctc">Average CTC (in Lakhs)</label><div class="input-rupee"><input type="number" id="avg-ctc" placeholder="12"></div></div>
+        <div class="field"><label for="total-hires-input">Total annual hires</label><input type="number" id="total-hires-input" placeholder="e.g. 100" min="1"></div>
+        <div class="field"><label for="avg-ctc">Average CTC (in Lakhs)</label><div class="input-rupee"><input type="number" id="avg-ctc" placeholder="e.g. 12"></div></div>
       </div>
       <div class="field" id="exp-level-group" style="margin-top:16px">
         <label>Typical experience level you hire for</label>
@@ -98,7 +98,7 @@
           <div class="choice-item"><input type="radio" name="exp_level" id="exp-senior" value="senior"><label for="exp-senior">Mostly<br>10+ yrs</label></div>
         </div>
       </div>
-      <p class="hint">This determines the applicable fee rate: 8.33% for junior, 10% for mixed, 12.5% for senior roles.</p>
+      <p class="hint">This helps us tailor the comparison to your typical hiring profile.</p>
       <div class="step-nav"><button class="btn-back" type="button">Back</button><button class="btn-next" type="button">Continue</button></div>
     </section>
 
@@ -109,7 +109,7 @@
         <h2 class="step-title">Recruitment technology</h2>
         <p class="step-subtitle">Annual spend on tools. Enter 0 if you don't have a separate budget.</p>
       </div>
-      <div class="field"><label for="tech-spend">Annual spend (in Lakhs)</label><div class="input-rupee"><input type="number" id="tech-spend" placeholder="0" min="0"></div></div>
+      <div class="field"><label for="tech-spend">Annual spend (in Lakhs)</label><div class="input-rupee"><input type="number" id="tech-spend" placeholder="e.g. 8" min="0"></div></div>
       <p class="hint">ATS, LinkedIn Recruiter, job boards, CRM, scheduling tools, recruitment automation.</p>
       <div class="step-nav"><button class="btn-back" type="button">Back</button><button class="btn-next" type="button">Continue</button></div>
     </section>
@@ -149,7 +149,7 @@
         <div class="yesno-card"><input type="radio" name="vacancy_tracks" id="vacancy-no" value="no" checked><label for="vacancy-no">No / unsure</label></div>
       </div>
       <div id="vacancy-cost-wrap" class="hidden">
-        <div class="field"><label for="vacancy-cost-day">Cost per vacant role per day (in Rupees)</label><div class="input-rupee"><input type="number" id="vacancy-cost-day" placeholder="5000" min="0"></div></div>
+        <div class="field"><label for="vacancy-cost-day">Cost per vacant role per day (in Rupees)</label><div class="input-rupee"><input type="number" id="vacancy-cost-day" placeholder="e.g. 5000" min="0"></div></div>
         <p class="hint">Think lost revenue, delayed deliverables, or overtime cost per open role per day.</p>
       </div>
       <div class="step-nav">
