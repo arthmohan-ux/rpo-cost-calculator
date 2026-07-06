@@ -367,8 +367,9 @@ document.addEventListener('DOMContentLoaded', function() {
 var _explanationCache = { unclosed: '', total: '' };
 
 function generateExplanation(type, r, inp, callback) {
-  if (!CONFIG.groqApiKey || CONFIG.groqApiKey === 'YOUR_GROQ_KEY_HERE') {
-    callback('Add your Groq API key in config.js to enable AI explanations.');
+  var endpoint = CONFIG.leadEndpoint;
+  if (!endpoint || endpoint === 'YOUR_ENDPOINT_HERE') {
+    callback('Configure your Apps Script endpoint in config.js to enable AI explanations.');
     return;
   }
 
@@ -402,18 +403,11 @@ function generateExplanation(type, r, inp, callback) {
       + '\nExplain this comparison simply. Start with "Right now, your company spends..." Use the rupee figures provided. Do not use bullet points.';
   }
 
-  fetch('https://api.groq.com/openai/v1/chat/completions', {
+  // Proxy through Apps Script (Groq key is server-side)
+  fetch(endpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + CONFIG.groqApiKey
-    },
-    body: JSON.stringify({
-      model: CONFIG.groqModel || 'llama-3.1-8b-instant',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 300,
-      temperature: 0.3
-    })
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ _action: 'explain', prompt: prompt })
   })
   .then(function(res) { return res.json(); })
   .then(function(data) {
@@ -423,7 +417,7 @@ function generateExplanation(type, r, inp, callback) {
     callback(text);
   })
   .catch(function() {
-    callback('Could not connect to AI service. Check your Groq API key.');
+    callback('Could not connect to AI service.');
   });
 }
 
